@@ -1,5 +1,8 @@
 primary_len="replace with your preferred len"
 import numpy as np
+import sys
+
+sys.set_int_max_str_digits(10000000)
 
 def rule30(left, center, right):
     return left^(center | right)
