@@ -1,3 +1,6 @@
+primary_len="replace with your preferred len"
+import numpy as np
+
 def rule30(left, center, right):
     return left^(center | right)
 
