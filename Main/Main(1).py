@@ -2,19 +2,16 @@
 import imageio.v3
 import time
 import sys
-
-
-
 import numpy as np
 
 
 
-
-
+str_to_int_limits=100000
+nca_limit=10000
 
 start_time=time.time()
 
-sys.set_int_max_str_digits(10000000)
+sys.set_int_max_str_digits(str_to_int_limits)
 def img_inp_method(path):
     imgcolor=imageio.v3.imread(path) # please add "r" in front of the path in case of input errors.
     rows, cols, rgb=imgcolor.shape
@@ -52,7 +49,7 @@ def text_inp_method(raw_text):
 
 
 #use imgcolor for further analysis
-primary_len=10000
+
 
 sys.set_int_max_str_digits(10000000)
 
@@ -82,7 +79,7 @@ def generate_psn(size,nbit, target_bit):
 
 
 size=101
-iterations=primary_len
+iterations=nca_limit
 tbit=size//2
 
 ngen=generate_psn(size,iterations,tbit)
