@@ -4,8 +4,8 @@ import sys
 
 sys.set_int_max_str_digits(10000000)
 
-def rule30(left, center, right):
-    return left^(center | right)
+def rule_combined(left, center, right):
+    return (left^(center | right)) | (left^right)
 
 def initialize_ca(size,tbit):
     cells=np.zeros(size, dtype=int)
@@ -15,7 +15,7 @@ def initialize_ca(size,tbit):
 def update_cells(cells):
     new_cells = np.zeros_like(cells)
     for i in range(1, len(cells) - 1):
-        new_cells[i] = rule30(cells[i - 1], cells[i], cells[i + 1])
+        new_cells[i] = rule_combined(cells[i - 1], cells[i], cells[i + 1])
     return new_cells
 
 def generate_psn(size,nbit, target_bit):
