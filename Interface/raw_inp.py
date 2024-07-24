@@ -50,6 +50,5 @@ elif stat_inp=="2":
     cnv_list=text_inp_method(str(input("Please enter your text")))
 
 
-print(cnv_list)
 
 #use imgcolor for further analysis
