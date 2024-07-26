@@ -3,8 +3,8 @@ import imageio.v3
 import time
 import sys
 import numpy as np
-
-
+import cv2
+import random
 
 str_to_int_limits=100000
 nca_limit=10000
@@ -38,7 +38,11 @@ def text_inp_method(raw_text):
     return res
 
 
+def signo_inp_method(image_path):
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    pixel_values = image.flatten()
 
+    return pixel_values
 
 
 
@@ -53,8 +57,15 @@ def text_inp_method(raw_text):
 
 sys.set_int_max_str_digits(10000000)
 
+def sbox(hieght,width):
+    res_arr=[]
+    for i in range(hieght*width):
+        res_arr+=[random.randint(0,255),]
+
+    return res_arr
+
 def rule_combined(left, center, right):
-    return (left^(center | right)) | (left^right)
+    return (left^(center | right)) 
 
 def initialize_ca(size,tbit):
     cells=np.zeros(size, dtype=int)
@@ -159,10 +170,67 @@ def text_encrypt_decrypt(pseudo_random_number,cnv_list):
     print("\nThe un-encrypted data is thus: ",res)
 
 
+def signature_encrypt_decrypt(pseudo_random_number, cnv_list):
+    height = 360
+    width = 480
+    sbox_arr=sbox(height,width)
+    if len(cnv_list)>=len(str(pseudo_random_number)):
+        temp=len(cnv_list)//len(str(pseudo_random_number))
+        rem=len(cnv_list)-temp*(len(str(pseudo_random_number)))
+        pseudo_random_number=temp*(str(pseudo_random_number))+rem*"0"
+
+    else:
+        pseudo_random_number=int(str(pseudo_random_number)[:len(cnv_list)])
+        
+    print(len(str(pseudo_random_number)))
+    print(len(cnv_list))
+    cn=[]
+    def invert(cnv_list):
+        for i in cnv_list:
+            
+            i=125-i
+            cn+=[i,]
+    enc_list=[]
+    for i in range(len(cnv_list)):
+        enc_list+=[cnv_list[i]^int(str(pseudo_random_number)[i])^sbox_arr[i],]
+    
+    print("Encrypted signature is: ")
+
+
+
+    
+
+    enc_np_arr=np.array(enc_list)
+
+    enc_image=enc_np_arr.reshape((height,width))
+    enc_image=enc_image.astype(np.uint8)
+    cv2.imshow("Encrypted signature",enc_image)
+
+
+
+    print("Encrypted reconstructed image: ")
+    unenc_arr=[]
+    for i in range(len(cnv_list)):
+        unenc_arr+=[enc_list[i]^int(str(pseudo_random_number)[i])^sbox_arr[i],]
+    
+
+    print("Un-Encrypted reconstructed image is: ")
+    unenc_np_arr=np.array(unenc_arr)
+    unenc_image=unenc_np_arr.reshape((height,width))
+    unenc_image=unenc_image.astype(np.uint8)
+    cv2.imshow("Un- Encrypted signature", unenc_image)
+
+
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+
+
 
 
 def main():
-    print("1. Image Encryption\n2. Plain-Text Encryption")
+    print("1. Image Encryption\n2. Plain-Text Encryption\n3. Signature Encryption")
     stat_inp=str(input())
 
     if stat_inp=="1":
@@ -176,7 +244,9 @@ def main():
 
         cnv_list=text_inp_method(str(input("Please enter your text: \n")))
         text_encrypt_decrypt(pseudo_random_number,cnv_list)
-
+    elif stat_inp=="3":
+        cnv_list=signo_inp_method(r"C:\Users\chestor\Desktop\sample.webp")
+        signature_encrypt_decrypt(pseudo_random_number,cnv_list)
 
 main()
 
