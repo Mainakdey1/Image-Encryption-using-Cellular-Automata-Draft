@@ -6,9 +6,23 @@ import numpy as np
 import cv2
 import random
 import encoded_file_storage
+import PySimpleGUI as sg
+
+
 
 str_to_int_limits=100000
 nca_limit=10000
+size=101
+tbit=size//2
+stat_inp=0
+sg.theme('DarkTeal10')
+
+
+
+
+
+
+
 start_time=time.time()
 
 
@@ -55,17 +69,6 @@ def signo_inp_method(image_path):
     return height, width, pixel_values
 
 
-
-
-
-
-
-
-
-#use imgcolor for further analysis
-
-
-
 def sbox(hieght,width):
     res_arr=[]
     for i in range(hieght*width):
@@ -90,33 +93,94 @@ def update_cells(cells):
 
 
     new_cells = np.zeros_like(cells)
+
     for i in range(1, len(cells) - 1):
+
         rule_randomizer_int=random.randint(0,1)
         if rule_randomizer_int==0:
 
             new_cells[i] = rule_30(cells[i - 1], cells[i], cells[i + 1])
         elif rule_randomizer_int==1:
             new_cells[i] = rule90(cells[i - 1], cells[i], cells[i + 1])
+
         
+
+
+    
     return new_cells
 
+            
 def generate_psn(size,nbit, target_bit):
     cells=initialize_ca(size,target_bit)
     bit_stream=[]
+    probar_count=0
     for _ in range(nbit):
         temp_cell=update_cells(cells)
         bit_stream+=[temp_cell[target_bit],]
+        probar_count+=(100/nca_limit)
+        window['-PROGRESS-'].update(probar_count)
 
-
+    window.close()
     return bit_stream
 
 
-size=101
-iterations=nca_limit
-tbit=size//2
 
-ngen=generate_psn(size,iterations,tbit)
-pseudo_random_number = int("".join(map(str, ngen)), 2)
+
+
+        
+    
+
+
+
+title_bar = [
+    [sg.Text('Encrypter', background_color='#2e756a', text_color='white', pad=(10, 0), size=(30, 1)),
+     ]
+]
+
+
+
+
+
+
+layout = [[sg.Column(title_bar, background_color='#2e756a')], [sg.Image(filename='dark.png' )], 
+    [sg.Text('Task Progress')], 
+    [sg.ProgressBar(max_value=100, orientation='h', size=(20, 20), key='-PROGRESS-')],
+    [sg.Button('Start'), sg.Button('Exit')] , [sg.Text('Enter the number of iterations: '), sg.InputText(key='-ITER-')] ]
+
+
+window = sg.Window('Encrypter', layout, no_titlebar=True)
+
+
+while True:
+    event, values = window.read()
+
+
+    if event == sg.WIN_CLOSED:
+
+        break
+    elif event == 'Exit':
+        sys.exit()
+
+
+
+    elif event == 'Start':
+        try:
+            nca_limit=int(values['-ITER-'])
+        except: 
+            nca_limit=10000
+        
+        
+
+       
+        size=101
+        tbit=size//2
+ 
+        ngen=generate_psn(size,nca_limit,tbit)
+        pseudo_random_number = int("".join(map(str, ngen)), 2)
+
+
+
+
 
 
 #################################
@@ -260,19 +324,13 @@ def signature_encrypt_decrypt(pseudo_random_number, unenc_key_arr,height, width)
     unenc_np_arr=np.array(unenc_arr)
     unenc_image=unenc_np_arr.reshape((height,width))
     unenc_image=unenc_image.astype(np.uint8)
-    stat_str=str(input("Do you wish to see the images?\n "))
-    if stat_str=="Y":
-        cv2.imshow("Encrypted signature",enc_image)
-        cv2.imshow("Un- Encrypted signature", unenc_image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+    cv2.imshow("Encrypted signature",enc_image)
+    cv2.imshow("Un- Encrypted signature", unenc_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
-    print("ok")
     postext=enc_key_packer(sbox_arr)
-    sl=encoded_file_storage.encoded_file_storage((r"C:\Users\chestor\Desktop\encdoc.txt"))
-    sl.encode(postext)
-    print("ok1")
     
 
 
@@ -294,30 +352,69 @@ def signature_encrypt_decrypt(pseudo_random_number, unenc_key_arr,height, width)
 
 
 def main():
-    print("1. Image Encryption\n2. Plain-Text Encryption\n3. Signature Encryption")
-    stat_inp=str(input())
+    sg.theme("DarkTeal10")
 
-    if stat_inp=="1":
+
+    layout = [
+    [sg.Text('Select an option from the Radio buttons:')],
+    [sg.Radio('Text Encryption', 'RADIO1', key='te', size=(40)), sg.Radio('Image encryption', 'RADIO1', key='ie', size=40), sg.Radio('Signature encryption', 'RADIO1', key='sige' , size=40) ],
+    
+    [sg.Button('Submit'), sg.Button('Cancel') ]
+    ]
+
+    # Create the window
+    window = sg.Window( "new window", layout, no_titlebar=True)
+    event , vals= window.read()
+
+
+
+    for k in vals:
+        if  k=='te' and vals[k]==True :
+            stat_inp=1
+   
+        elif k=='ie' and vals[k]==True :
+            stat_inp=2
+        elif k=='sige' and vals[k]==True :
+            stat_inp=3
+
+    if stat_inp==1:
     
         path=img_inp_method(str(input("Please enter the path of your image: \n")))
         unenc_key_arr=img_inp_method(path)
         image_encrpt_decrypt(pseudo_random_number,unenc_key_arr)
         
 
-    elif stat_inp=="2":
+    elif stat_inp==2:
 
         unenc_key_arr=text_inp_method(str(input("Please enter your text: \n")))
         text_encrypt_decrypt(pseudo_random_number,unenc_key_arr)
-    elif stat_inp=="3":
-        print("Please enter the path to your signature file")
-        height,width, unenc_key_arr=signo_inp_method(r"C:\Users\chestor\Desktop\sample.webp")
+    elif stat_inp==3:
+        layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
+          [sg.Button('Go'), sg.Button('Exit')]]
+
+
+        window = sg.Window('File Browser', layout)
+        event,values = window.read()
+        file_path = values['-IN-']
+        window.close()
+        layout= [[sg.Image(file_path)]]
+        window= sg.Window('Preview Image',layout)
+        event, values= window.read()
+        
+
+
+   
+
+        height,width, unenc_key_arr=signo_inp_method(file_path)
         signature_encrypt_decrypt(pseudo_random_number,unenc_key_arr,height,width)
 
 
-    return 0
+    return True
 
 try:
-    main()
+    if __name__=="__main__":
+        main()
 except:
     sys.exit()
+
 
