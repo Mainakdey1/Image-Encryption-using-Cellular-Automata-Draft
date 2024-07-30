@@ -143,7 +143,7 @@ title_bar = [
 
 
 layout = [[sg.Column(title_bar, background_color='#2e756a')], [sg.Image(filename='dark.png' )], 
-    [sg.Text('Task Progress')], 
+    [sg.Text('Cellular Automata Maker')], 
     [sg.ProgressBar(max_value=100, orientation='h', size=(20, 20), key='-PROGRESS-')],
     [sg.Button('Start'), sg.Button('Exit')] , [sg.Text('Enter the number of iterations: '), sg.InputText(key='-ITER-')] ]
 
@@ -329,7 +329,7 @@ def signature_encrypt_decrypt(pseudo_random_number, unenc_key_arr,height, width)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-
+    sys.exit()
     postext=enc_key_packer(sbox_arr)
     
 
@@ -397,20 +397,30 @@ def main():
         event,values = window.read()
         file_path = values['-IN-']
         window.close()
-        layout= [[sg.Image(file_path)]]
-        window= sg.Window('Preview Image',layout)
-        event, values= window.read()
         
+        title_bar = [
+            [sg.Text('Image Preview', background_color='#2e756a', text_color='white', pad=(10, 0), size=(30, 1)),
+            ]
+]
+
+        layout= [[sg.Column(title_bar, background_color='#2e756a')],
+                 [sg.Image(file_path)],
+                 [sg.Text('Do you wish to use this image?')],
+                 [sg.Yes() , sg.No()]]
+        window= sg.Window('Preview Image',layout, no_titlebar=True)
+        event, values= window.read()
+ 
+    
+
+        if event== 'Yes':
+
+            height,width, unenc_key_arr=signo_inp_method(file_path)
+            signature_encrypt_decrypt(pseudo_random_number,unenc_key_arr,height,width)
+        else:
+            sys.exit()
 
 
-   
-
-        height,width, unenc_key_arr=signo_inp_method(file_path)
-        signature_encrypt_decrypt(pseudo_random_number,unenc_key_arr,height,width)
-
-
-    return True
-
+    sys.exit()
 try:
     if __name__=="__main__":
         main()
