@@ -1,13 +1,26 @@
+import subprocess
+import pkg_resources
+
+
+
+required={'imageio','numpy','opencv-python','pysimplegui'}
+installed={pkg.key for pkg in pkg_resources.working_set}
+missing=required-installed
+if missing:
+    subprocess.check_call([sys.executable,"-m","pip","install",*missing])
+
+
 
 import imageio.v3
 import time
 import sys
+import os
 import numpy as np
 import cv2
 import random
 import encoded_file_storage
 import PySimpleGUI as sg
-
+from os.path import expanduser
 
 
 str_to_int_limits=100000
@@ -15,6 +28,7 @@ nca_limit=10000
 size=101
 tbit=size//2
 stat_inp=0
+dir_pathV= expanduser("~")+"\\"
 sg.theme('DarkTeal10')
 
 
@@ -24,11 +38,80 @@ sg.theme('DarkTeal10')
 
 
 start_time=time.time()
-
-
-
-
 sys.set_int_max_str_digits(str_to_int_limits)
+
+
+
+
+
+
+
+
+#Logger class for logging events. Events have 3 severity:info, warning and critical
+#info: call with this to record events that are part of the normal functioning of the program
+#warning: call with this severity to record events that are crucial but will not break the funtioning of the program.
+#critical: call with this severity to record events that are critical to the functioning of the program.
+
+class logger:
+
+
+    def __init__(self,_log_file,_global_severity=0 ,_dir_path=str,_logobj= str):
+        self._logobj=_logobj
+        self._global_severity=_global_severity
+        self._log_file=_log_file
+        self._dir_path=_dir_path
+        
+    
+
+    def info(self,_function_name,_message):
+
+    
+        log_file=open(self._dir_path+self._log_file,"a+")
+        log_file.write("\n"+time.ctime()+" at "+str(time.perf_counter_ns())+"    "+_function_name+"   called (local_severity=INFO)with message:  "+_message)
+        log_file.close()
+
+
+    def warning(self,_function_name,_message):
+
+        log_file=open(self._dir_path+self._log_file,"a+")
+        log_file.write("\n"+time.ctime()+" at "+str(time.perf_counter_ns())+"    "+_function_name+"   called (local_severity=WARNING)with message:  "+_message)
+        log_file.close()
+
+    def critical(self,_function_name,_message):
+
+        log_file=open(self._dir_path+self._log_file,"a+")
+        log_file.write("\n"+time.ctime()+" at "+str(time.perf_counter_ns())+"    "+_function_name+"   called (local_severity=CRITICAL)with message:  "+_message)
+        log_file.close()
+ 
+#call this method to produce the log file
+    def producelog(self):
+        log_file=open(self._dir_path+self._log_file,"r")
+        msg=log_file.readlines()
+        log_file.close()
+        return msg
+    
+#call this method to find the privilege level of the current logging instance.
+    def privilege(self):
+        if self._global_severity==0:
+            print("This logger is at the highest privilege level")
+        else:
+            return self._global_severity
+        
+#call this method to identify the logging instance, if there are several instances initiated.
+    def identify(self):
+        print(self._logobj)
+
+
+
+
+    
+
+
+
+
+logins=logger("logfile.txt",0,dir_pathV,"globallogger")
+logins.info('MAIN', 'successful')
+
 
 
 
