@@ -119,29 +119,38 @@ logins.info('MAIN', 'successful')
 
 
 def img_inp_method(path):
-    imgcolor=imageio.v3.imread(path) # please add "r" in front of the path in case of input errors.
-    rows, cols, rgb=imgcolor.shape
+    try:
+        imgcolor=imageio.v3.imread(path) # please add "r" in front of the path in case of input errors.
+        rows, cols, rgb=imgcolor.shape
 
-    R=[]
-    G=[]
-    B=[]
-    for i in range(rows):
-        for j in range(cols):
-            B.append(imgcolor[i,j,0])
-            G.append(imgcolor[i,j,1])
-            R.append(imgcolor[i,j,2])
+        R=[]
+        G=[]
+        B=[]
+        for i in range(rows):
+            for j in range(cols):
+                B.append(imgcolor[i,j,0])
+                G.append(imgcolor[i,j,1])
+                R.append(imgcolor[i,j,2])
 
 
-    return R+G+B
+        logins.info("IMAGE INPUT METHOD CALLED","CALLED")
+        return R+G+B
+        
+    
+    except:
+        logins.critical('IMAGE INPUT METHOD ',"FUNCTION INITIATION FAILED")
 
 def text_inp_method(raw_text):
-    res=[]
-    lt=len(raw_text)
-    for i in range(lt):
-        res+=[ord(raw_text[i]),]
+    try:
+        res=[]
+        lt=len(raw_text)
+        for i in range(lt):
+            res+=[ord(raw_text[i]),]
 
-
-    return res
+        logins.info('TEXT INPUT METHOD ','CALLED')
+        return res
+    except:
+        logins.critical('TEXT INPUT METHOD ','FUNCTION INITIATION FAILED')
 
 
 def signo_inp_method(image_path):
@@ -439,7 +448,7 @@ def main():
 
 
     layout = [
-    [sg.Text('Select an option from the Radio buttons:')],
+    [sg.Text('Please select the type of data you want to encrypt :')],
     [sg.Radio('Text Encryption', 'RADIO1', key='te', size=(40)), sg.Radio('Image encryption', 'RADIO1', key='ie', size=40), sg.Radio('Signature encryption', 'RADIO1', key='sige' , size=40) ],
     
     [sg.Button('Submit'), sg.Button('Cancel') ]
@@ -460,16 +469,27 @@ def main():
         elif k=='sige' and vals[k]==True :
             stat_inp=3
 
-    if stat_inp==1:
+    if stat_inp==2:
     
         path=img_inp_method(str(input("Please enter the path of your image: \n")))
         unenc_key_arr=img_inp_method(path)
         image_encrpt_decrypt(pseudo_random_number,unenc_key_arr)
         
 
-    elif stat_inp==2:
+    elif stat_inp==1:
+        layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
+          [sg.Button('Go'), sg.Button('Exit')]]
 
-        unenc_key_arr=text_inp_method(str(input("Please enter your text: \n")))
+
+        window = sg.Window('File Browser', layout)
+        event,values = window.read()
+        file_path = values['-IN-']
+        with open(file_path, 'r') as file:
+            content = file.read()
+        window.close()
+        
+
+        unenc_key_arr=text_inp_method(str(content))
         text_encrypt_decrypt(pseudo_random_number,unenc_key_arr)
     elif stat_inp==3:
         layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
