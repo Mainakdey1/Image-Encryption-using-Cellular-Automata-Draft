@@ -43,7 +43,7 @@ sys.set_int_max_str_digits(str_to_int_limits)
 
 
 
-__version__=0.100
+__version__=0.00
 
 
 
@@ -280,9 +280,9 @@ class encoded_file_storage():
 def custom_popup_yes_no(message, title='', keep_on_top=True):
     # Define the layout for the custom popup window
     layout = [
-        [sg.Text(message, font=('Helvetica', 16))],
-        [sg.Button('Yes', size=(10, 1), font=('Helvetica', 14)),
-         sg.Button('No', size=(10, 1), font=('Helvetica', 14))]
+        [sg.Text(message)],
+        [sg.Button('Yes'),
+         sg.Button('No')]
     ]
 
     # Create the window without a title bar
