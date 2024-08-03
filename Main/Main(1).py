@@ -277,6 +277,24 @@ class encoded_file_storage():
             file.close()
 
         
+def custom_popup_yes_no(message, title='', keep_on_top=True):
+    # Define the layout for the custom popup window
+    layout = [
+        [sg.Text(message, font=('Helvetica', 16))],
+        [sg.Button('Yes', size=(10, 1), font=('Helvetica', 14)),
+         sg.Button('No', size=(10, 1), font=('Helvetica', 14))]
+    ]
+
+    # Create the window without a title bar
+    window = sg.Window(title, layout, keep_on_top=keep_on_top, no_titlebar=True, element_justification='center')
+
+    # Read the window's events
+    event, _ = window.read()
+
+    # Close the window
+    window.close()
+
+    return event
 
 
     
@@ -305,7 +323,7 @@ if match_regexno>__version__:
     try:
 
     
-        response = sg.popup_yes_no('A new version has been found. Do you wish to update the program?')
+        response = custom_popup_yes_no('A new version has been found. Do you wish to update?')
 
         if response== 'Yes':
             #new version available. update immediately
