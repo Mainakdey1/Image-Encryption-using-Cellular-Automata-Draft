@@ -303,6 +303,8 @@ match_regexno=float(match_regex.group(1))
 if match_regexno>__version__:
 
     try:
+
+    
         response = sg.popup_yes_no('A new version has been found. Do you wish to update the program?')
 
         if response== 'Yes':
@@ -313,8 +315,6 @@ if match_regexno>__version__:
             origin_file.close()
             logins.info("REGEX VERSION MATCH","SUCCESFUL")
             subprocess.call(file,shell=True)
-
-            
 
     except:
         logins.critical("REGEX VERSION MATCH","UNSUCCESFUL")
