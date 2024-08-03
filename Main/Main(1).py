@@ -11,7 +11,8 @@ if missing:
     subprocess.check_call([sys.executable,"-m","pip","install",*missing])
 
 
-
+import urllib3
+import regex
 import imageio.v3
 import time
 import sys
@@ -22,7 +23,7 @@ import random
 import PySimpleGUI as sg
 from os.path import expanduser
 
-
+file=sys.argv[0] 
 str_to_int_limits=100000
 nca_limit=10000
 size=101
@@ -30,7 +31,7 @@ tbit=size//2
 stat_inp=0
 dir_pathV= expanduser("~")+"\\"
 sg.theme('DarkTeal10')
-
+url='https://raw.githubusercontent.com/Mainakdey1/Image-Encryption-using-Cellular-Automata-Draft/main/Main/Main(1).py'
 
 
 
@@ -42,7 +43,7 @@ sys.set_int_max_str_digits(str_to_int_limits)
 
 
 
-version=0.100
+__version__=0.100
 
 
 
@@ -285,7 +286,55 @@ class encoded_file_storage():
 
 logins=logger("logfile.txt",0,dir_pathV,"globallogger")
 
+#initiate connection object.
+try:
 
+    connection_pool=urllib3.PoolManager()
+    resp=connection_pool.request("GET",url)
+    match_regex=regex.search(r'__version__*= *(\S+)', resp.data.decode("utf-8"))
+    logins.info("CONNECTION OBJECT","CONNECTION OBJECT INITIALIZED")
+except:
+    logins.critical("CONNECTION OBJECT","CONNECTION OBJECT NOT INITIALIZED")
+
+
+match_regexno=float(match_regex.group(1))
+
+#version matching is done here
+if match_regexno>__version__:
+
+    try:
+
+    
+        #new version available. update immediately
+        logins.info("REGEX VERSION MATCH","NEW VERSION FOUND")
+        origin_file=open(file,"wb")
+        origin_file.write(resp.data)
+        origin_file.close()
+        logins.info("REGEX VERSION MATCH","SUCCESFUL")
+        subprocess.call(file,shell=True)
+        
+
+    except:
+        logins.critical("REGEX VERSION MATCH","UNSUCCESFUL")
+elif match_regexno<__version__:
+    try:
+
+        #version rollback initiated. updating to old version
+        logins.info("REGEX VERSION MATCH","NEW VERSION FOUND")
+        origin_file=open(file,"wb")
+        origin_file.write(resp.data)
+        origin_file.close()
+        logins.info("REGEX VERSION MATCH","VERSION ROLLBACK INITIATED")
+        subprocess.call(file,shell=True)
+    except:
+        logins.critical("REGEX VERSION MATCH","UNSUCCESFUL")
+else:
+    #no new version found. 
+    #update not called.
+    logins.info("REGEX VERSION MATCH","NO NEW VERSION FOUND")
+
+    
+   
 
 
 
@@ -715,10 +764,10 @@ def signature_encrypt_decrypt(pseudo_random_number, unenc_key_arr,height, width)
         cv2.imshow("Un- Encrypted signature", unenc_image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-
-        sys.exit()
         postext=enc_key_packer(sbox_arr)
         logins.info('SIGNATURE ENC DENC INTERAL', 'CALLED')
+        sys.exit()
+
         
 
     except:
