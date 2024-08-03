@@ -23,14 +23,18 @@ import random
 import PySimpleGUI as sg
 from os.path import expanduser
 
-file=sys.argv[0] 
-str_to_int_limits=100000
-nca_limit=10000
+#gets the filepath of the current file the program is in
+file=sys.argv[0]
+ 
+str_to_int_limits=100000  #sets the string to integer conversion limit to a specified number
+nca_limit=10000  
 size=101
 tbit=size//2
 stat_inp=0
-dir_pathV= expanduser("~")+"\\"
-sg.theme('DarkTeal10')
+
+
+dir_pathV= expanduser("~")+"\\"    #saves log file directly to the current working directory
+sg.theme('DarkTeal10')             #sets the global gui color for the program
 url='https://raw.githubusercontent.com/Mainakdey1/Image-Encryption-using-Cellular-Automata-Draft/main/Main/Main(1).py'
 
 
@@ -43,7 +47,7 @@ sys.set_int_max_str_digits(str_to_int_limits)
 
 
 
-__version__=0.101
+__version__=0.102
 
 
 
@@ -360,7 +364,7 @@ else:
 
 
 
-
+#this function converts the image into a array set
 def img_inp_method(path):
     try:
         imgcolor=imageio.v3.imread(path) # please add "r" in front of the path in case of input errors.
@@ -383,6 +387,8 @@ def img_inp_method(path):
     except:
         logins.critical('IMAGE INPUT METHOD ',"FUNCTION INITIATION FAILED")
 
+
+#this function converts the raw text into a workable array set
 def text_inp_method(raw_text):
     try:
         res=[]
@@ -396,7 +402,7 @@ def text_inp_method(raw_text):
     except:
         logins.critical('TEXT INPUT METHOD ','FUNCTION INITIATION FAILED')
 
-
+#this function converts the raw signature image into a workable array set
 def signo_inp_method(image_path):
     try:
         image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -408,6 +414,7 @@ def signo_inp_method(image_path):
         logins.critical('SIGNO_INP_METHOD','ERROR IN CALLING')
 
 
+#this converts any text to binary. Used later in the program to pack text.
 def text_to_binary(text):
     try:
         logins.info('TEXT_TO_BINARY','CALLED')
@@ -421,7 +428,7 @@ def text_to_binary(text):
 
 
 
-
+#substitution method function
 def sbox(hieght,width):
 
     res_arr=[]
@@ -429,6 +436,10 @@ def sbox(hieght,width):
         res_arr+=[random.randint(0,255),]
 
     return res_arr
+
+
+
+#rule sets. All rules are in dictionary format. This is because the lookup time for dictionaries in O(1) which is faster than calculating the individual bits.
 
 def rule30(left, center, right):
 
@@ -510,7 +521,7 @@ def rule197(left, center, right):
 
 
 
-
+#Initializes an empty array set with a specified number of bits that the user wants to work with.
 def initialize_ca(size,tbit):
     try:
         cells=np.zeros(size, dtype=int)
@@ -520,6 +531,10 @@ def initialize_ca(size,tbit):
     
     except:
         logins.critical('INITIALIZE_CA','ERROR IN CALLING')
+
+
+
+#updates the selected cell based on the array's previous states
 def update_cells(cells):
 
     try:
@@ -529,6 +544,7 @@ def update_cells(cells):
     
         for i in range(1, len(cells) - 1):
 
+            #this selects a random number and based on that number, a rule is selected for state updation
             rule_randomizer_int=random.randint(0,4)
             if rule_randomizer_int==0:
 
@@ -550,7 +566,9 @@ def update_cells(cells):
         
     except:
         logins.critical('UPDATE_CELL','ERROR IN CALLING')
-            
+
+
+ #generates a pseudo random number based on the binary number that is extracted from the final array from the update_cell module.           
 def generate_psn(size,nbit, target_bit):
     try:
         cells=initialize_ca(size,target_bit)
@@ -559,7 +577,7 @@ def generate_psn(size,nbit, target_bit):
         for _ in range(nbit):
             temp_cell=update_cells(cells)
             bit_stream+=[temp_cell[target_bit],]
-            probar_count+=(100/nca_limit)
+            probar_count+=(100/nca_limit)   #this updates the progress bar based on the current number of iterations completed.
             window['-PROGRESS-'].update(probar_count)
 
         window.close()
@@ -575,7 +593,7 @@ def generate_psn(size,nbit, target_bit):
     
 
 
-
+#GUI specifications for the opening window. Window closes when a psn is generated.
 title_bar = [
     [sg.Text('Encrypter', background_color='#2e756a', text_color='white', pad=(10, 0), size=(30, 1)),
      ]
@@ -628,15 +646,19 @@ while True:
 
 
 
-
+#key packer for the program
 def enc_key_packer(key_arr):
     try:
+        if type(key_arr) == list:
+            key_arr=key_arr
+        elif type(key_arr) == int:
+            key_arr=list(str(key_arr))
         packed_key=""
         for i in range(len(key_arr)):
             packed_key+=str(key_arr[i])+"|"
 
         logins.info('ENC_KEY_PACKER','CALLED')
-        return packed_key
+        return packed_key[:len(packed_key)-1]
 
     except:
         logins.warning('ENC_KEY_PACKER','ERROR IN CALLING')
@@ -647,12 +669,13 @@ def enc_key_packer(key_arr):
 
 
 
-
+#Encryption function for Images with non zero r,g,b values.
 def image_encrpt_decrypt(pseudo_random_number,unenc_key_arr):
     try:
 
     #Important information: The pseudo random number must be in integer format and the unenc_key_arr argument must recieve only list objects.
 
+        #this takes a new psn and either pads it if it is too small for the working array set or trims it if it is too large.
         if len(unenc_key_arr)>=len(str(pseudo_random_number)):
             temp=len(unenc_key_arr)//len(str(pseudo_random_number))
             rem=pseudo_random_number-int(temp*(str(pseudo_random_number)))
@@ -681,6 +704,7 @@ def image_encrpt_decrypt(pseudo_random_number,unenc_key_arr):
 
 
 
+#Text encryption function that takes a psn and the working array set and encrypts it.
 def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
 
 
@@ -688,7 +712,7 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
 
 
     try:
-
+        #read the description in image encryption module
         if len(unenc_key_arr)>=len(str(pseudo_random_number)):
 
             temp=len(unenc_key_arr)//len(str(pseudo_random_number))
@@ -730,63 +754,97 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
 
 
 
-
+#Signature encryption and decryption module that takes a psn(key) and a working data set in array form and encrypts as well as decrypts it.
 def signature_encrypt_decrypt(pseudo_random_number, unenc_key_arr,height, width):
     try:
-        prim_len=len(unenc_key_arr)
-        sbox_arr=sbox(height,width)
-        if prim_len>=len(str(pseudo_random_number)):
-            temp=prim_len//len(str(pseudo_random_number))
-            rem=prim_len-temp*(len(str(pseudo_random_number)))
-            pseudo_random_number=temp*(str(pseudo_random_number))+rem*"0"
+        packed_primary_key=enc_key_packer(pseudo_random_number)
 
-        else:
-            pseudo_random_number=int(str(pseudo_random_number)[:len(unenc_key_arr)])
+        layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
+                          [sg.Button('Go'), sg.Button('Exit')]]
+                
+        window = sg.Window('Select your primary encryption key file', layout)
+        event,values = window.read()
+        file_path = values['-IN-']
+        window.close()
+
+        binary_primary_key=text_to_binary(packed_primary_key)
+        with open(file_path,'w+') as file:
+            file.write(binary_primary_key)
+
+
+
+
+        if event == 'Go':
+
+            prim_len=len(unenc_key_arr)
+            sbox_arr=sbox(height,width)
+            packed_secondary_key=enc_key_packer(sbox_arr)
+
+            layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
+                    [sg.Button('Go'), sg.Button('Exit')]]
+                
+            window = sg.Window('Select your secondary encryption key file', layout)
+            event,values = window.read()
+            file_path = values['-IN-']
+            window.close()
+
+            binary_secondary_key=text_to_binary(packed_secondary_key)
+            with open(file_path,'w+') as file:
+                file.write(binary_secondary_key)
+
+            if prim_len>=len(str(pseudo_random_number)):
+                temp=prim_len//len(str(pseudo_random_number))
+                rem=prim_len-temp*(len(str(pseudo_random_number)))
+                pseudo_random_number=temp*(str(pseudo_random_number))+rem*"0"
+
+            else:
+                pseudo_random_number=int(str(pseudo_random_number)[:len(unenc_key_arr)])
+                
+
+            
+            enc_key_arr=[]
+            for i in range(prim_len):
+                enc_key_arr+=[unenc_key_arr[i]^int(str(pseudo_random_number)[i]),]
+
+
+            enc_dict_pck={}
+            for i in range(prim_len):
+                enc_dict_pck[sbox_arr[i]]=enc_key_arr[i]
+
             
 
-        
-        enc_key_arr=[]
-        for i in range(prim_len):
-            enc_key_arr+=[unenc_key_arr[i]^int(str(pseudo_random_number)[i]),]
+            
 
+            enc_np_arr=np.array(sbox_arr)
 
-        enc_dict_pck={}
-        for i in range(prim_len):
-            enc_dict_pck[sbox_arr[i]]=enc_key_arr[i]
-
-        
-
-        
-
-        enc_np_arr=np.array(sbox_arr)
-
-        enc_image=enc_np_arr.reshape((height,width))
-        enc_image=enc_image.astype(np.uint8)
-        
+            enc_image=enc_np_arr.reshape((height,width))
+            enc_image=enc_image.astype(np.uint8)
+            
 
 
 
 
 
-        unenc_arr=[]
-        for i in range(prim_len):
-            unenc_arr+=[enc_dict_pck[sbox_arr[i]],]
-        
-        for i in range(len(unenc_key_arr)):
-            unenc_arr[i]=[enc_key_arr[i]^int(str(pseudo_random_number)[i]),]
-        
+            unenc_arr=[]
+            for i in range(prim_len):
+                unenc_arr+=[enc_dict_pck[sbox_arr[i]],]
+            
+            for i in range(len(unenc_key_arr)):
+                unenc_arr[i]=[enc_key_arr[i]^int(str(pseudo_random_number)[i]),]
+            
 
 
-        unenc_np_arr=np.array(unenc_arr)
-        unenc_image=unenc_np_arr.reshape((height,width))
-        unenc_image=unenc_image.astype(np.uint8)
-        cv2.imshow("Encrypted signature",enc_image)
-        cv2.imshow("Un- Encrypted signature", unenc_image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-        postext=enc_key_packer(sbox_arr)
-        logins.info('SIGNATURE ENC DENC INTERAL', 'CALLED')
-        sys.exit()
+            unenc_np_arr=np.array(unenc_arr)
+            unenc_image=unenc_np_arr.reshape((height,width))
+            unenc_image=unenc_image.astype(np.uint8)
+            cv2.imshow("Encrypted signature",enc_image)
+            cv2.imshow("Un- Encrypted signature", unenc_image)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+            postext=enc_key_packer(sbox_arr)
+            logins.info('SIGNATURE ENC DENC INTERAL', 'CALLED')
+            window.close()
+            sys.exit()
 
         
 
@@ -808,7 +866,7 @@ def signature_encrypt_decrypt(pseudo_random_number, unenc_key_arr,height, width)
 
 
 
-
+#Main function
 def main():
     sg.theme("DarkTeal10")
 
@@ -820,7 +878,7 @@ def main():
     [sg.Button('Submit'), sg.Button('Cancel') ]
     ]
 
-    # Create the window
+    
     window = sg.Window( "new window", layout, no_titlebar=True)
     event , vals= window.read()
 
@@ -852,7 +910,7 @@ def main():
             layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
             [sg.Button('Go'), sg.Button('Exit')]]
 
-
+            #choose your input file here
             window = sg.Window('Select your input file', layout)
             event,values = window.read()
             file_path = values['-IN-']
@@ -860,6 +918,7 @@ def main():
                 content = file.read()
             window.close()
            
+           #preview the file
             title_bar = [
                 [sg.Text('Text Preview', background_color='#2e756a', text_color='white', pad=(10, 0), size=(30, 1)),
                 ]
@@ -882,11 +941,13 @@ def main():
                 temp_uenc_to_format_holder=''
                 for _ in unenc_key_arr:
                     temp_uenc_to_format_holder+=(str(_)+'|')
+
                 temp_uenc_to_format_holder=temp_uenc_to_format_holder[:len(temp_uenc_to_format_holder)-1]
                 temp_binary_key_holder=text_to_binary(temp_uenc_to_format_holder)
 
                 layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
-                    [sg.Button('Go'), sg.Button('Exit')]]
+                          [sg.Button('Go'), sg.Button('Exit')]]
+                
                 window = sg.Window('Select your encryption key file', layout)
                 event,values = window.read()
                 file_path = values['-IN-']
@@ -923,15 +984,16 @@ def main():
             window.close()
             
             title_bar = [
-                [sg.Text('Image Preview', background_color='#2e756a', text_color='white', pad=(10, 0), size=(30, 1)),
+                [sg.Text('Signature Preview', background_color='#2e756a', text_color='white', pad=(10, 0), size=(30, 1)),
                 ]
                         ]
 
             layout= [[sg.Column(title_bar, background_color='#2e756a')],
                     [sg.Image(file_path)],
-                    [sg.Text('Do you wish to use this image?')],
+                    [sg.Text('Do you wish to use this signature?')],
                     [sg.Yes() , sg.No()]]
-            window= sg.Window('Preview Image',layout, no_titlebar=True)
+            
+            window= sg.Window('Preview Signature',layout, no_titlebar=True)
             event, values= window.read()
     
         
