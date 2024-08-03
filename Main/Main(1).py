@@ -42,7 +42,7 @@ sys.set_int_max_str_digits(str_to_int_limits)
 
 
 
-
+version=0.100
 
 
 
@@ -119,17 +119,92 @@ class encoded_file_storage():
         
     def encode(self,pretext):
         def sbox(hieght,width):
+
             res_arr=[]
             for i in range(hieght*width):
                 res_arr+=[random.randint(0,255),]
 
             return res_arr
 
-        def rule_30(left, center, right):
-            return (left^(center | right)) 
+        def rule30(left, center, right):
 
-        def rule90(left,center, right):
-            return (left | right)
+
+            RULE_30 = {
+            (1, 1, 1): 0,
+            (1, 1, 0): 0,
+            (1, 0, 1): 0,
+            (1, 0, 0): 1,
+            (0, 1, 1): 1,
+            (0, 1, 0): 1,
+            (0, 0, 1): 1,
+            (0, 0, 0): 0
+        }
+            return RULE_30[(left, center, right)]
+
+        def rule90(left, center, right):
+
+            RULE_90 = {
+            (1, 1, 1): 0,
+            (1, 1, 0): 1,
+            (1, 0, 1): 0,
+            (1, 0, 0): 1,
+            (0, 1, 1): 1,
+            (0, 1, 0): 0,
+            (0, 0, 1): 1,
+            (0, 0, 0): 0
+        }
+            return RULE_90[(left, center, right)]
+
+        def rule115(left, center, right):
+            RULE_115 = {
+            (1, 1, 1): 0,
+            (1, 1, 0): 1,
+            (1, 0, 1): 1,
+            (1, 0, 0): 1,
+            (0, 1, 1): 1,
+            (0, 1, 0): 0,
+            (0, 0, 1): 1,
+            (0, 0, 0): 1
+        }
+            return RULE_115[(left, center, right)]
+
+
+
+        def rule110(left, center, right):
+
+            RULE_110 = {
+            (1, 1, 1): 0,
+            (1, 1, 0): 1,
+            (1, 0, 1): 1,
+            (1, 0, 0): 0,
+            (0, 1, 1): 1,
+            (0, 1, 0): 1,
+            (0, 0, 1): 1,
+            (0, 0, 0): 0
+        }
+            return RULE_110[(left, center, right)]
+
+        def rule197(left, center, right):
+
+            RULE_197 = {
+            (1, 1, 1): 1,
+            (1, 1, 0): 1,
+            (1, 0, 1): 0,
+            (1, 0, 0): 0,
+            (0, 1, 1): 0,
+            (0, 1, 0): 1,
+            (0, 0, 1): 0,
+            (0, 0, 0): 1
+        }
+            return RULE_197[(left, center, right)]
+
+
+
+
+
+
+
+
 
         def initialize_ca(size,tbit):
             cells=np.zeros(size, dtype=int)
@@ -143,13 +218,22 @@ class encoded_file_storage():
 
             new_cells = np.zeros_like(cells)
             for i in range(1, len(cells) - 1):
-                rule_randomizer_int=random.randint(0,1)
+                rule_randomizer_int=random.randint(0,4)
                 if rule_randomizer_int==0:
 
-                    new_cells[i] = rule_30(cells[i - 1], cells[i], cells[i + 1])
+                    new_cells[i] = rule30(cells[i - 1], cells[i], cells[i + 1])
+
                 elif rule_randomizer_int==1:
                     new_cells[i] = rule90(cells[i - 1], cells[i], cells[i + 1])
-                
+
+                elif rule_randomizer_int==2:
+                    new_cells[i] = rule115(cells[i - 1], cells[i], cells[i + 1])
+
+                elif rule_randomizer_int==3:
+                    new_cells[i] = rule110(cells[i - 1], cells[i], cells[i + 1])
+
+                elif rule_randomizer_int==4:
+                    new_cells[i] = rule197(cells[i - 1], cells[i], cells[i + 1])
             return new_cells
 
         def generate_psn(size,nbit, target_bit):
@@ -245,17 +329,22 @@ def text_inp_method(raw_text):
 
 
 def signo_inp_method(image_path):
-    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    height,width=image.shape
-    pixel_values = image.flatten()
-
-    return height, width, pixel_values
+    try:
+        image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        height,width=image.shape
+        pixel_values = image.flatten()
+        logins.info('SIGNO_INP_METHOD','CALLED')    
+        return height, width, pixel_values
+    except:
+        logins.critical('SIGNO_INP_METHOD','ERROR IN CALLING')
 
 
 def text_to_binary(text):
-
-    return ' '.join(format(ord(char), '08b') for char in text)
-
+    try:
+        logins.info('TEXT_TO_BINARY','CALLED')
+        return ' '.join(format(ord(char), '08b') for char in text)
+    except:
+        logins.warning('TEXT_TO_BINARY','ERROR IN CALLING')
 
 
 
@@ -265,6 +354,7 @@ def text_to_binary(text):
 
 
 def sbox(hieght,width):
+
     res_arr=[]
     for i in range(hieght*width):
         res_arr+=[random.randint(0,255),]
@@ -272,6 +362,7 @@ def sbox(hieght,width):
     return res_arr
 
 def rule30(left, center, right):
+
 
     RULE_30 = {
     (1, 1, 1): 0,
@@ -352,53 +443,62 @@ def rule197(left, center, right):
 
 
 def initialize_ca(size,tbit):
-    cells=np.zeros(size, dtype=int)
-    cells[tbit]=1
-    return cells
-
+    try:
+        cells=np.zeros(size, dtype=int)
+        cells[tbit]=1
+        logins.info('INITIALIZE_CA','CALLED')
+        return cells
+    
+    except:
+        logins.critical('INITIALIZE_CA','ERROR IN CALLING')
 def update_cells(cells):
 
+    try:
+        rule_randomizer_int=0
+        new_cells = np.zeros_like(cells)
 
-    rule_randomizer_int=0
-    new_cells = np.zeros_like(cells)
-
-   
-    for i in range(1, len(cells) - 1):
-
-        rule_randomizer_int=random.randint(0,4)
-        if rule_randomizer_int==0:
-
-            new_cells[i] = rule30(cells[i - 1], cells[i], cells[i + 1])
-
-        elif rule_randomizer_int==1:
-            new_cells[i] = rule90(cells[i - 1], cells[i], cells[i + 1])
-
-        elif rule_randomizer_int==2:
-            new_cells[i] = rule115(cells[i - 1], cells[i], cells[i + 1])
-
-        elif rule_randomizer_int==3:
-            new_cells[i] = rule110(cells[i - 1], cells[i], cells[i + 1])
-
-        elif rule_randomizer_int==4:
-            new_cells[i] = rule197(cells[i - 1], cells[i], cells[i + 1])
     
-    return new_cells
+        for i in range(1, len(cells) - 1):
 
+            rule_randomizer_int=random.randint(0,4)
+            if rule_randomizer_int==0:
+
+                new_cells[i] = rule30(cells[i - 1], cells[i], cells[i + 1])
+
+            elif rule_randomizer_int==1:
+                new_cells[i] = rule90(cells[i - 1], cells[i], cells[i + 1])
+
+            elif rule_randomizer_int==2:
+                new_cells[i] = rule115(cells[i - 1], cells[i], cells[i + 1])
+
+            elif rule_randomizer_int==3:
+                new_cells[i] = rule110(cells[i - 1], cells[i], cells[i + 1])
+
+            elif rule_randomizer_int==4:
+                new_cells[i] = rule197(cells[i - 1], cells[i], cells[i + 1])
+        logins.info('UPDATE_CELLS','CALLED')
+        return new_cells
+        
+    except:
+        logins.critical('UPDATE_CELL','ERROR IN CALLING')
             
 def generate_psn(size,nbit, target_bit):
-    cells=initialize_ca(size,target_bit)
-    bit_stream=[]
-    probar_count=0
-    for _ in range(nbit):
-        temp_cell=update_cells(cells)
-        bit_stream+=[temp_cell[target_bit],]
-        probar_count+=(100/nca_limit)
-        window['-PROGRESS-'].update(probar_count)
+    try:
+        cells=initialize_ca(size,target_bit)
+        bit_stream=[]
+        probar_count=0
+        for _ in range(nbit):
+            temp_cell=update_cells(cells)
+            bit_stream+=[temp_cell[target_bit],]
+            probar_count+=(100/nca_limit)
+            window['-PROGRESS-'].update(probar_count)
 
-    window.close()
-    return bit_stream
+        window.close()
+        logins.info('GENERATE_PSN','CALLED')
+        return bit_stream
 
-
+    except:
+        logins.critical('GENERATE_PSN','ERROR IN CALLING')
 
 
 
@@ -461,13 +561,16 @@ while True:
 
 
 def enc_key_packer(key_arr):
-    packed_key=""
-    for i in range(len(key_arr)):
-        packed_key+=str(key_arr[i])+"|"
+    try:
+        packed_key=""
+        for i in range(len(key_arr)):
+            packed_key+=str(key_arr[i])+"|"
 
+        logins.info('ENC_KEY_PACKER','CALLED')
+        return packed_key
 
-    return packed_key
-
+    except:
+        logins.warning('ENC_KEY_PACKER','ERROR IN CALLING')
 
 
 
@@ -477,32 +580,35 @@ def enc_key_packer(key_arr):
 
 
 def image_encrpt_decrypt(pseudo_random_number,unenc_key_arr):
+    try:
 
     #Important information: The pseudo random number must be in integer format and the unenc_key_arr argument must recieve only list objects.
 
-    if len(unenc_key_arr)>=len(str(pseudo_random_number)):
-        temp=len(unenc_key_arr)//len(str(pseudo_random_number))
-        rem=pseudo_random_number-int(temp*(str(pseudo_random_number)))
-        pseudo_random_number=temp*(str(pseudo_random_number))+rem
+        if len(unenc_key_arr)>=len(str(pseudo_random_number)):
+            temp=len(unenc_key_arr)//len(str(pseudo_random_number))
+            rem=pseudo_random_number-int(temp*(str(pseudo_random_number)))
+            pseudo_random_number=temp*(str(pseudo_random_number))+rem
 
-    else:
-        pseudo_random_number=int(str(pseudo_random_number)[:len(unenc_key_arr)])
+        else:
+            pseudo_random_number=int(str(pseudo_random_number)[:len(unenc_key_arr)])
 
+            
+        def encrypter(enc_len,enc_text, psn):
+            enc_out=[]
+            for i in range(enc_len):
+                enc_out+=[int(enc_text[i]) ^ int(psn[i])]
+
+
+            return enc_out
         
-    def encrypter(enc_len,enc_text, psn):
-        enc_out=[]
-        for i in range(enc_len):
-            enc_out+=[int(enc_text[i]) ^ int(psn[i])]
+        print("The raw rgb pixel values are: ",unenc_key_arr)
 
+        print("The encrypted rgb pixel values are : ",encrypter(len(unenc_key_arr),unenc_key_arr,pseudo_random_number))
 
-        return enc_out
-    
-    print("The raw rgb pixel values are: ",unenc_key_arr)
+        logins.info('IMAGE_ENC_DENC_INTERNAL', 'CALLED')
 
-    print("The encrypted rgb pixel values are : ",encrypter(len(unenc_key_arr),unenc_key_arr,pseudo_random_number))
-
-
-    
+    except:
+        logins.warning('IMAGE_ENC_DENC_INTERNAL','ERROR IN CALLING')
 
 
 
@@ -512,104 +618,111 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
     #Important information: The pseudo random number must be in integer format and the unenc_key_arr argument must recieve only list objects.
 
 
+    try:
+
+        if len(unenc_key_arr)>=len(str(pseudo_random_number)):
+
+            temp=len(unenc_key_arr)//len(str(pseudo_random_number))
+            rem=pseudo_random_number-int(temp*(str(pseudo_random_number)))
+            pseudo_random_number=temp*(str(pseudo_random_number))+rem
+            print(pseudo_random_number)
+        else:
+
+            pseudo_random_number=int(str(pseudo_random_number)[:len(unenc_key_arr)]
+                                    )
 
 
-    if len(unenc_key_arr)>=len(str(pseudo_random_number)):
+        enc_list=[]
+        for i in range(len(unenc_key_arr)):
+            enc_list+=[unenc_key_arr[i]^int(str(pseudo_random_number)[i]),]
 
-        temp=len(unenc_key_arr)//len(str(pseudo_random_number))
-        rem=pseudo_random_number-int(temp*(str(pseudo_random_number)))
-        pseudo_random_number=temp*(str(pseudo_random_number))+rem
-        print(pseudo_random_number)
-    else:
+        fin=""
+        for i in enc_list:
+            fin+=chr(i)
 
-        pseudo_random_number=int(str(pseudo_random_number)[:len(unenc_key_arr)]
-                                )
+        print("\nThe encrypted data is thus: ",fin)
 
+        un_encrypted_ls=[]
+        for i in range(len(unenc_key_arr)):
+            un_encrypted_ls+=[enc_list[i]^int(str(pseudo_random_number)[i])]
 
-    enc_list=[]
-    for i in range(len(unenc_key_arr)):
-        enc_list+=[unenc_key_arr[i]^int(str(pseudo_random_number)[i]),]
+        res=""
 
-    fin=""
-    for i in enc_list:
-        fin+=chr(i)
-
-    print("\nThe encrypted data is thus: ",fin)
-
-    un_encrypted_ls=[]
-    for i in range(len(unenc_key_arr)):
-        un_encrypted_ls+=[enc_list[i]^int(str(pseudo_random_number)[i])]
-
-    res=""
-
-    for i in un_encrypted_ls:
-        res+=chr(i)
+        for i in un_encrypted_ls:
+            res+=chr(i)
 
 
-    print("\nThe un-encrypted data is thus: ",res)
+        print("\nThe un-encrypted data is thus: ",res)
+        logins.info('TEXT ENC_DENC_INTERNAL','CALLED')
+
+    except:
+        logins.warning('TEXT ENC_DENC_INTERNAL','ERROR IN CALLING')
 
 
 
 
 
 def signature_encrypt_decrypt(pseudo_random_number, unenc_key_arr,height, width):
-    prim_len=len(unenc_key_arr)
-    sbox_arr=sbox(height,width)
-    if prim_len>=len(str(pseudo_random_number)):
-        temp=prim_len//len(str(pseudo_random_number))
-        rem=prim_len-temp*(len(str(pseudo_random_number)))
-        pseudo_random_number=temp*(str(pseudo_random_number))+rem*"0"
+    try:
+        prim_len=len(unenc_key_arr)
+        sbox_arr=sbox(height,width)
+        if prim_len>=len(str(pseudo_random_number)):
+            temp=prim_len//len(str(pseudo_random_number))
+            rem=prim_len-temp*(len(str(pseudo_random_number)))
+            pseudo_random_number=temp*(str(pseudo_random_number))+rem*"0"
 
-    else:
-        pseudo_random_number=int(str(pseudo_random_number)[:len(unenc_key_arr)])
+        else:
+            pseudo_random_number=int(str(pseudo_random_number)[:len(unenc_key_arr)])
+            
+
+        
+        enc_key_arr=[]
+        for i in range(prim_len):
+            enc_key_arr+=[unenc_key_arr[i]^int(str(pseudo_random_number)[i]),]
+
+
+        enc_dict_pck={}
+        for i in range(prim_len):
+            enc_dict_pck[sbox_arr[i]]=enc_key_arr[i]
+
         
 
-    
-    enc_key_arr=[]
-    for i in range(prim_len):
-        enc_key_arr+=[unenc_key_arr[i]^int(str(pseudo_random_number)[i]),]
+        
 
+        enc_np_arr=np.array(sbox_arr)
 
-    enc_dict_pck={}
-    for i in range(prim_len):
-        enc_dict_pck[sbox_arr[i]]=enc_key_arr[i]
-
-    
-
-    
-
-    enc_np_arr=np.array(sbox_arr)
-
-    enc_image=enc_np_arr.reshape((height,width))
-    enc_image=enc_image.astype(np.uint8)
-    
+        enc_image=enc_np_arr.reshape((height,width))
+        enc_image=enc_image.astype(np.uint8)
+        
 
 
 
 
 
-    unenc_arr=[]
-    for i in range(prim_len):
-        unenc_arr+=[enc_dict_pck[sbox_arr[i]],]
-    
-    for i in range(len(unenc_key_arr)):
-        unenc_arr[i]=[enc_key_arr[i]^int(str(pseudo_random_number)[i]),]
-    
+        unenc_arr=[]
+        for i in range(prim_len):
+            unenc_arr+=[enc_dict_pck[sbox_arr[i]],]
+        
+        for i in range(len(unenc_key_arr)):
+            unenc_arr[i]=[enc_key_arr[i]^int(str(pseudo_random_number)[i]),]
+        
 
 
-    unenc_np_arr=np.array(unenc_arr)
-    unenc_image=unenc_np_arr.reshape((height,width))
-    unenc_image=unenc_image.astype(np.uint8)
-    cv2.imshow("Encrypted signature",enc_image)
-    cv2.imshow("Un- Encrypted signature", unenc_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+        unenc_np_arr=np.array(unenc_arr)
+        unenc_image=unenc_np_arr.reshape((height,width))
+        unenc_image=unenc_image.astype(np.uint8)
+        cv2.imshow("Encrypted signature",enc_image)
+        cv2.imshow("Un- Encrypted signature", unenc_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
-    sys.exit()
-    postext=enc_key_packer(sbox_arr)
-    
+        sys.exit()
+        postext=enc_key_packer(sbox_arr)
+        logins.info('SIGNATURE ENC DENC INTERAL', 'CALLED')
+        
 
-
+    except:
+        logins.warning('SIGNATURE ENC DENC INTERNAL','ERROR IN CALLING')
 
 
 
@@ -654,80 +767,96 @@ def main():
             stat_inp=3
 
     if stat_inp==2:
-    
-        path=img_inp_method(str(input("Please enter the path of your image: \n")))
-        unenc_key_arr=img_inp_method(path)
-        image_encrpt_decrypt(pseudo_random_number,unenc_key_arr)
+        try:
+            path=img_inp_method(str(input("Please enter the path of your image: \n")))
+            unenc_key_arr=img_inp_method(path)
+            image_encrpt_decrypt(pseudo_random_number,unenc_key_arr)
+            logins.info('STAT INP IMG', 'CALLED')
         
+        except:
+            logins.critical('STAT INP IMG','ERROR IN CALLING STAT INP')
+
 
     elif stat_inp==1:
         
-
-        layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
-          [sg.Button('Go'), sg.Button('Exit')]]
-
-
-        window = sg.Window('Select your input file', layout)
-        event,values = window.read()
-        file_path = values['-IN-']
-        with open(file_path, 'r') as file:
-            content = file.read()
-        window.close()
-        unenc_key_arr=text_inp_method(str(content))
-        temp_binary_key_holder=''
-        temp_uenc_to_format_holder=''
-        for _ in unenc_key_arr:
-            temp_uenc_to_format_holder+=(str(_)+'|')
-        temp_uenc_to_format_holder=temp_uenc_to_format_holder[:len(temp_uenc_to_format_holder)-1]
-        temp_binary_key_holder=text_to_binary(temp_uenc_to_format_holder)
-
-        layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
+        try:
+            layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
             [sg.Button('Go'), sg.Button('Exit')]]
-        window = sg.Window('Select your encryption key file', layout)
-        event,values = window.read()
-        file_path = values['-IN-']
+
+
+            window = sg.Window('Select your input file', layout)
+            event,values = window.read()
+            file_path = values['-IN-']
+            with open(file_path, 'r') as file:
+                content = file.read()
+            window.close()
+            unenc_key_arr=text_inp_method(str(content))
+            temp_binary_key_holder=''
+            temp_uenc_to_format_holder=''
+            for _ in unenc_key_arr:
+                temp_uenc_to_format_holder+=(str(_)+'|')
+            temp_uenc_to_format_holder=temp_uenc_to_format_holder[:len(temp_uenc_to_format_holder)-1]
+            temp_binary_key_holder=text_to_binary(temp_uenc_to_format_holder)
+
+            layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
+                [sg.Button('Go'), sg.Button('Exit')]]
+            window = sg.Window('Select your encryption key file', layout)
+            event,values = window.read()
+            file_path = values['-IN-']
 
 
 
-        with open(file_path,'w+') as file:
-            file.write(temp_binary_key_holder)
-        window.close()
+            with open(file_path,'w+') as file:
+                file.write(temp_binary_key_holder)
+            window.close()
 
 
 
 
-        text_encrypt_decrypt(pseudo_random_number,unenc_key_arr)
+            text_encrypt_decrypt(pseudo_random_number,unenc_key_arr)
+            logins.info('STAT INP TXT', 'CALLED')
+
+        except:
+            logins.critical('STAT INP TXT','ERROR IN CALLING STAT INP')
 
     elif stat_inp==3:
-        layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
-          [sg.Button('Go'), sg.Button('Exit')]]
 
 
-        window = sg.Window('File Browser', layout)
-        event,values = window.read()
-        file_path = values['-IN-']
-        window.close()
-        
-        title_bar = [
-            [sg.Text('Image Preview', background_color='#2e756a', text_color='white', pad=(10, 0), size=(30, 1)),
-            ]
-]
+        try:
+            layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
+            [sg.Button('Go'), sg.Button('Exit')]]
 
-        layout= [[sg.Column(title_bar, background_color='#2e756a')],
-                 [sg.Image(file_path)],
-                 [sg.Text('Do you wish to use this image?')],
-                 [sg.Yes() , sg.No()]]
-        window= sg.Window('Preview Image',layout, no_titlebar=True)
-        event, values= window.read()
- 
+
+            window = sg.Window('File Browser', layout)
+            event,values = window.read()
+            file_path = values['-IN-']
+            window.close()
+            
+            title_bar = [
+                [sg.Text('Image Preview', background_color='#2e756a', text_color='white', pad=(10, 0), size=(30, 1)),
+                ]
+    ]
+
+            layout= [[sg.Column(title_bar, background_color='#2e756a')],
+                    [sg.Image(file_path)],
+                    [sg.Text('Do you wish to use this image?')],
+                    [sg.Yes() , sg.No()]]
+            window= sg.Window('Preview Image',layout, no_titlebar=True)
+            event, values= window.read()
     
+        
 
-        if event== 'Yes':
+            if event== 'Yes':
 
-            height,width, unenc_key_arr=signo_inp_method(file_path)
-            signature_encrypt_decrypt(pseudo_random_number,unenc_key_arr,height,width)
-        else:
-            sys.exit()
+                height,width, unenc_key_arr=signo_inp_method(file_path)
+                signature_encrypt_decrypt(pseudo_random_number,unenc_key_arr,height,width)
+            else:
+                sys.exit()
+            
+            logins.info('STAT INP SIGNATURE', 'CALLED')
+
+        except:
+            logins.critical('STAT INP SIGNATURE','ERROR IN CALLING STAT INP')
 
 
     sys.exit()
