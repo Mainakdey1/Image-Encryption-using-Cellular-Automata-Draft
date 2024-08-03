@@ -1,8 +1,9 @@
 import subprocess
-
-
-import setuptools
 import pkg_resources
+
+
+
+
 
 required={'imageio','numpy','opencv-python','pysimplegui','urllib3','regex'}
 installed={pkg.key for pkg in pkg_resources.working_set}
@@ -11,12 +12,14 @@ if missing:
     subprocess.check_call([sys.executable,"-m","pip","install",*missing])
 
 
+
+
+
 import urllib3
 import regex
 import imageio.v3
 import time
 import sys
-import os
 import numpy as np
 import cv2
 import random
@@ -202,6 +205,78 @@ class encoded_file_storage():
             (0, 0, 0): 1
         }
             return RULE_197[(left, center, right)]
+        
+        def rule80(left, center, right) :
+            RULE_80 = {
+            (1, 1, 1): 0,
+            (1, 1, 0): 1,
+            (1, 0, 1): 0,
+            (1, 0, 0): 1,
+            (0, 1, 1): 0,
+            (0, 1, 0): 0,
+            (0, 0, 1): 0,
+            (0, 0, 0): 0
+        }
+            
+            return RULE_80[(left, center, right)]
+        
+        def rule45(left, center, right) :
+            RULE_45 = {
+            (1, 1, 1): 0,
+            (1, 1, 0): 0,
+            (1, 0, 1): 1,
+            (1, 0, 0): 0,
+            (0, 1, 1): 1,
+            (0, 1, 0): 1,
+            (0, 0, 1): 0,
+            (0, 0, 0): 1
+            }
+            
+            return RULE_45[(left, center, right)]
+        
+        def rule129(left, center, right) :
+            RULE_129 = {
+            (1, 1, 1): 1,
+            (1, 1, 0): 0,
+            (1, 0, 1): 0,
+            (1, 0, 0): 0,
+            (0, 1, 1): 0,
+            (0, 1, 0): 0,
+            (0, 0, 1): 0,
+            (0, 0, 0): 1
+            }
+            
+            return RULE_129[(left, center, right)]
+        
+        def rule73(left, center, right) :
+            RULE_73 = {
+            (1, 1, 1): 0,
+            (1, 1, 0): 1,
+            (1, 0, 1): 0,
+            (1, 0, 0): 0,
+            (0, 1, 1): 1,
+            (0, 1, 0): 0,
+            (0, 0, 1): 0,
+            (0, 0, 0): 1
+            }
+            
+            return RULE_73[(left, center, right)]
+
+        def rule54(left, center, right) :
+            RULE_54 = {
+            (1, 1, 1): 0,
+            (1, 1, 0): 0,
+            (1, 0, 1): 1,
+            (1, 0, 0): 1,
+            (0, 1, 1): 1,
+            (0, 1, 0): 0,
+            (0, 0, 1): 1,
+            (0, 0, 0): 1
+            }
+            
+            return RULE_54[(left, center, right)]
+
+
 
 
 
@@ -239,6 +314,22 @@ class encoded_file_storage():
 
                 elif rule_randomizer_int==4:
                     new_cells[i] = rule197(cells[i - 1], cells[i], cells[i + 1])
+
+                elif rule_randomizer_int==5:
+                    new_cells[i] = rule80(cells[i - 1], cells[i], cells[i + 1])
+
+                elif rule_randomizer_int==6:
+                    new_cells[i] = rule129(cells[i - 1], cells[i], cells[i + 1])
+
+                elif rule_randomizer_int==7:
+                    new_cells[i] = rule45(cells[i - 1], cells[i], cells[i + 1])
+                
+                elif rule_randomizer_int==8:
+                    new_cells[i] = rule73(cells[i - 1], cells[i], cells[i + 1])
+
+                elif rule_randomizer_int==9:
+                    new_cells[i] = rule54(cells[i - 1], cells[i], cells[i + 1])
+
             return new_cells
 
         def generate_psn(size,nbit, target_bit):
@@ -513,6 +604,81 @@ def rule197(left, center, right):
 }
     return RULE_197[(left, center, right)]
 
+def rule80(left, center, right) :
+    RULE_80 = {
+    (1, 1, 1): 0,
+    (1, 1, 0): 1,
+    (1, 0, 1): 0,
+    (1, 0, 0): 1,
+    (0, 1, 1): 0,
+    (0, 1, 0): 0,
+    (0, 0, 1): 0,
+    (0, 0, 0): 0
+}
+    
+    return RULE_80[(left, center, right)]
+
+def rule45(left, center, right) :
+    RULE_45 = {
+    (1, 1, 1): 0,
+    (1, 1, 0): 0,
+    (1, 0, 1): 1,
+    (1, 0, 0): 0,
+    (0, 1, 1): 1,
+    (0, 1, 0): 1,
+    (0, 0, 1): 0,
+    (0, 0, 0): 1
+    }
+    
+    return RULE_45[(left, center, right)]
+
+def rule129(left, center, right) :
+    RULE_129 = {
+    (1, 1, 1): 1,
+    (1, 1, 0): 0,
+    (1, 0, 1): 0,
+    (1, 0, 0): 0,
+    (0, 1, 1): 0,
+    (0, 1, 0): 0,
+    (0, 0, 1): 0,
+    (0, 0, 0): 1
+    }
+    
+    return RULE_129[(left, center, right)]
+
+def rule73(left, center, right) :
+    RULE_73 = {
+    (1, 1, 1): 0,
+    (1, 1, 0): 1,
+    (1, 0, 1): 0,
+    (1, 0, 0): 0,
+    (0, 1, 1): 1,
+    (0, 1, 0): 0,
+    (0, 0, 1): 0,
+    (0, 0, 0): 1
+    }
+    
+    return RULE_73[(left, center, right)]
+
+def rule54(left, center, right) :
+    RULE_54 = {
+    (1, 1, 1): 0,
+    (1, 1, 0): 0,
+    (1, 0, 1): 1,
+    (1, 0, 0): 1,
+    (0, 1, 1): 1,
+    (0, 1, 0): 0,
+    (0, 0, 1): 1,
+    (0, 0, 0): 1
+    }
+    
+    return RULE_54[(left, center, right)]
+
+
+
+
+
+
 
 
 
@@ -545,7 +711,7 @@ def update_cells(cells):
         for i in range(1, len(cells) - 1):
 
             #this selects a random number and based on that number, a rule is selected for state updation
-            rule_randomizer_int=random.randint(0,4)
+            rule_randomizer_int=random.randint(0,9)
             if rule_randomizer_int==0:
 
                 new_cells[i] = rule30(cells[i - 1], cells[i], cells[i + 1])
@@ -561,6 +727,21 @@ def update_cells(cells):
 
             elif rule_randomizer_int==4:
                 new_cells[i] = rule197(cells[i - 1], cells[i], cells[i + 1])
+
+            elif rule_randomizer_int==5:
+                new_cells[i] = rule80(cells[i - 1], cells[i], cells[i + 1])
+
+            elif rule_randomizer_int==6:
+                new_cells[i] = rule129(cells[i - 1], cells[i], cells[i + 1])
+
+            elif rule_randomizer_int==7:
+                new_cells[i] = rule45(cells[i - 1], cells[i], cells[i + 1])
+            
+            elif rule_randomizer_int==8:
+                new_cells[i] = rule73(cells[i - 1], cells[i], cells[i + 1])
+
+            elif rule_randomizer_int==9:
+                new_cells[i] = rule54(cells[i - 1], cells[i], cells[i + 1])
 
         return new_cells
         
