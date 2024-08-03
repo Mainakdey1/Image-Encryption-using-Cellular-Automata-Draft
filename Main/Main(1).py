@@ -1,7 +1,8 @@
 import subprocess
+
+
+import setuptools
 import pkg_resources
-
-
 
 required={'imageio','numpy','opencv-python','pysimplegui'}
 installed={pkg.key for pkg in pkg_resources.working_set}
@@ -18,7 +19,6 @@ import os
 import numpy as np
 import cv2
 import random
-import encoded_file_storage
 import PySimpleGUI as sg
 from os.path import expanduser
 
@@ -104,13 +104,103 @@ class logger:
 
 
 
+
+
+
+
+
+
+
+class encoded_file_storage():
+    #storage
+
+    def __init__(self,file_path = None) -> None:
+        self._file_path=file_path
+        
+    def encode(self,pretext):
+        def sbox(hieght,width):
+            res_arr=[]
+            for i in range(hieght*width):
+                res_arr+=[random.randint(0,255),]
+
+            return res_arr
+
+        def rule_30(left, center, right):
+            return (left^(center | right)) 
+
+        def rule90(left,center, right):
+            return (left | right)
+
+        def initialize_ca(size,tbit):
+            cells=np.zeros(size, dtype=int)
+            cells[tbit]=1
+            return cells
+
+        def update_cells(cells):
+            rule_randomizer_int=0
+
+
+
+            new_cells = np.zeros_like(cells)
+            for i in range(1, len(cells) - 1):
+                rule_randomizer_int=random.randint(0,1)
+                if rule_randomizer_int==0:
+
+                    new_cells[i] = rule_30(cells[i - 1], cells[i], cells[i + 1])
+                elif rule_randomizer_int==1:
+                    new_cells[i] = rule90(cells[i - 1], cells[i], cells[i + 1])
+                
+            return new_cells
+
+        def generate_psn(size,nbit, target_bit):
+            cells=initialize_ca(size,target_bit)
+            bit_stream=[]
+            for _ in range(nbit):
+                temp_cell=update_cells(cells)
+                bit_stream+=[temp_cell[target_bit],]
+
+
+            return bit_stream
+
+        size=101
+        nbit=10000
+        target_bit=size//2
+        binary_gen=generate_psn(size,nbit, target_bit)
+        _binary_representation = ''.join(format(ord(char), '08b') for char in pretext)
+        prim_len=len(_binary_representation)
+        pseudo_random_number = int("".join(map(str, binary_gen)), 2)
+
+        if prim_len>=len(str(pseudo_random_number)):
+            temp=prim_len//len(str(pseudo_random_number))
+            rem=prim_len-temp*(len(str(pseudo_random_number)))
+            pseudo_random_number=temp*(str(pseudo_random_number))+rem*"0"
+
+        else:
+            pseudo_random_number=int(str(pseudo_random_number)[:(len(_binary_representation))])
+
+
+        _enc_binary_string=""
+        for i in range(prim_len):
+            _enc_binary_string+=str(int(str(pseudo_random_number)[i])^int(_binary_representation[i]))
+
+        
+
+
+        with open(self._file_path, "w+") as file:
+            file.write(_enc_binary_string)
+
+            file.close()
+
+        
+
+
     
 
 
 
 
 logins=logger("logfile.txt",0,dir_pathV,"globallogger")
-logins.info('MAIN', 'successful')
+
 
 
 
@@ -148,6 +238,7 @@ def text_inp_method(raw_text):
             res+=[ord(raw_text[i]),]
 
         logins.info('TEXT INPUT METHOD ','CALLED')
+
         return res
     except:
         logins.critical('TEXT INPUT METHOD ','FUNCTION INITIATION FAILED')
@@ -161,6 +252,18 @@ def signo_inp_method(image_path):
     return height, width, pixel_values
 
 
+def text_to_binary(text):
+
+    return ' '.join(format(ord(char), '08b') for char in text)
+
+
+
+
+
+
+
+
+
 def sbox(hieght,width):
     res_arr=[]
     for i in range(hieght*width):
@@ -168,11 +271,85 @@ def sbox(hieght,width):
 
     return res_arr
 
-def rule_30(left, center, right):
-    return (left^(center | right)) 
+def rule30(left, center, right):
 
-def rule90(left,center, right):
-    return (left | right)
+    RULE_30 = {
+    (1, 1, 1): 0,
+    (1, 1, 0): 0,
+    (1, 0, 1): 0,
+    (1, 0, 0): 1,
+    (0, 1, 1): 1,
+    (0, 1, 0): 1,
+    (0, 0, 1): 1,
+    (0, 0, 0): 0
+}
+    return RULE_30[(left, center, right)]
+
+def rule90(left, center, right):
+
+    RULE_90 = {
+    (1, 1, 1): 0,
+    (1, 1, 0): 1,
+    (1, 0, 1): 0,
+    (1, 0, 0): 1,
+    (0, 1, 1): 1,
+    (0, 1, 0): 0,
+    (0, 0, 1): 1,
+    (0, 0, 0): 0
+}
+    return RULE_90[(left, center, right)]
+
+def rule115(left, center, right):
+    RULE_115 = {
+    (1, 1, 1): 0,
+    (1, 1, 0): 1,
+    (1, 0, 1): 1,
+    (1, 0, 0): 1,
+    (0, 1, 1): 1,
+    (0, 1, 0): 0,
+    (0, 0, 1): 1,
+    (0, 0, 0): 1
+}
+    return RULE_115[(left, center, right)]
+
+
+
+def rule110(left, center, right):
+
+    RULE_110 = {
+    (1, 1, 1): 0,
+    (1, 1, 0): 1,
+    (1, 0, 1): 1,
+    (1, 0, 0): 0,
+    (0, 1, 1): 1,
+    (0, 1, 0): 1,
+    (0, 0, 1): 1,
+    (0, 0, 0): 0
+}
+    return RULE_110[(left, center, right)]
+
+def rule197(left, center, right):
+
+    RULE_197 = {
+    (1, 1, 1): 1,
+    (1, 1, 0): 1,
+    (1, 0, 1): 0,
+    (1, 0, 0): 0,
+    (0, 1, 1): 0,
+    (0, 1, 0): 1,
+    (0, 0, 1): 0,
+    (0, 0, 0): 1
+}
+    return RULE_197[(left, center, right)]
+
+
+
+
+
+
+
+
+
 
 def initialize_ca(size,tbit):
     cells=np.zeros(size, dtype=int)
@@ -180,24 +357,30 @@ def initialize_ca(size,tbit):
     return cells
 
 def update_cells(cells):
+
+
     rule_randomizer_int=0
-
-
-
     new_cells = np.zeros_like(cells)
 
+   
     for i in range(1, len(cells) - 1):
 
-        rule_randomizer_int=random.randint(0,1)
+        rule_randomizer_int=random.randint(0,4)
         if rule_randomizer_int==0:
 
-            new_cells[i] = rule_30(cells[i - 1], cells[i], cells[i + 1])
+            new_cells[i] = rule30(cells[i - 1], cells[i], cells[i + 1])
+
         elif rule_randomizer_int==1:
             new_cells[i] = rule90(cells[i - 1], cells[i], cells[i + 1])
 
-        
+        elif rule_randomizer_int==2:
+            new_cells[i] = rule115(cells[i - 1], cells[i], cells[i + 1])
 
+        elif rule_randomizer_int==3:
+            new_cells[i] = rule110(cells[i - 1], cells[i], cells[i + 1])
 
+        elif rule_randomizer_int==4:
+            new_cells[i] = rule197(cells[i - 1], cells[i], cells[i + 1])
     
     return new_cells
 
@@ -228,10 +411,6 @@ title_bar = [
     [sg.Text('Encrypter', background_color='#2e756a', text_color='white', pad=(10, 0), size=(30, 1)),
      ]
 ]
-
-
-
-
 
 
 layout = [[sg.Column(title_bar, background_color='#2e756a')], [sg.Image(filename='dark.png' )], 
@@ -275,7 +454,8 @@ while True:
 
 
 
-#################################
+
+
 
 
 
@@ -289,7 +469,7 @@ def enc_key_packer(key_arr):
     return packed_key
 
 
-#################################
+
 
 
 
@@ -324,6 +504,8 @@ def image_encrpt_decrypt(pseudo_random_number,unenc_key_arr):
 
     
 
+
+
 def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
 
 
@@ -332,15 +514,17 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
 
 
 
-
     if len(unenc_key_arr)>=len(str(pseudo_random_number)):
+
         temp=len(unenc_key_arr)//len(str(pseudo_random_number))
         rem=pseudo_random_number-int(temp*(str(pseudo_random_number)))
         pseudo_random_number=temp*(str(pseudo_random_number))+rem
+        print(pseudo_random_number)
     else:
+
         pseudo_random_number=int(str(pseudo_random_number)[:len(unenc_key_arr)]
                                 )
-        
+
 
     enc_list=[]
     for i in range(len(unenc_key_arr)):
@@ -477,20 +661,43 @@ def main():
         
 
     elif stat_inp==1:
+        
+
         layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
           [sg.Button('Go'), sg.Button('Exit')]]
 
 
-        window = sg.Window('File Browser', layout)
+        window = sg.Window('Select your input file', layout)
         event,values = window.read()
         file_path = values['-IN-']
         with open(file_path, 'r') as file:
             content = file.read()
         window.close()
-        
-
         unenc_key_arr=text_inp_method(str(content))
+        temp_binary_key_holder=''
+        temp_uenc_to_format_holder=''
+        for _ in unenc_key_arr:
+            temp_uenc_to_format_holder+=(str(_)+'|')
+        temp_uenc_to_format_holder=temp_uenc_to_format_holder[:len(temp_uenc_to_format_holder)-1]
+        temp_binary_key_holder=text_to_binary(temp_uenc_to_format_holder)
+
+        layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
+            [sg.Button('Go'), sg.Button('Exit')]]
+        window = sg.Window('Select your encryption key file', layout)
+        event,values = window.read()
+        file_path = values['-IN-']
+
+
+
+        with open(file_path,'w+') as file:
+            file.write(temp_binary_key_holder)
+        window.close()
+
+
+
+
         text_encrypt_decrypt(pseudo_random_number,unenc_key_arr)
+
     elif stat_inp==3:
         layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
           [sg.Button('Go'), sg.Button('Exit')]]
