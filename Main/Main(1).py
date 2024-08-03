@@ -4,7 +4,7 @@ import subprocess
 import setuptools
 import pkg_resources
 
-required={'imageio','numpy','opencv-python','pysimplegui'}
+required={'imageio','numpy','opencv-python','pysimplegui','urllib3','regex'}
 installed={pkg.key for pkg in pkg_resources.working_set}
 missing=required-installed
 if missing:
@@ -43,7 +43,7 @@ sys.set_int_max_str_digits(str_to_int_limits)
 
 
 
-__version__=0.100
+__version__=0.101
 
 
 
@@ -545,7 +545,7 @@ def update_cells(cells):
 
             elif rule_randomizer_int==4:
                 new_cells[i] = rule197(cells[i - 1], cells[i], cells[i + 1])
-        logins.info('UPDATE_CELLS','CALLED')
+
         return new_cells
         
     except:
@@ -585,7 +585,7 @@ title_bar = [
 layout = [[sg.Column(title_bar, background_color='#2e756a')], [sg.Image(filename='dark.png' )], 
     [sg.Text('Cellular Automata Maker')], 
     [sg.ProgressBar(max_value=100, orientation='h', size=(20, 20), key='-PROGRESS-')],
-    [sg.Button('Start'), sg.Button('Exit')] , [sg.Text('Enter the number of iterations: '), sg.InputText(key='-ITER-')] ]
+    [sg.Button('Start'), sg.Button('Exit')] , [sg.Text('Enter the number of iterations(minimum 50): '), sg.InputText(key='-ITER-')] ]
 
 
 window = sg.Window('Encrypter', layout, no_titlebar=True)
@@ -859,31 +859,52 @@ def main():
             with open(file_path, 'r') as file:
                 content = file.read()
             window.close()
-            unenc_key_arr=text_inp_method(str(content))
-            temp_binary_key_holder=''
-            temp_uenc_to_format_holder=''
-            for _ in unenc_key_arr:
-                temp_uenc_to_format_holder+=(str(_)+'|')
-            temp_uenc_to_format_holder=temp_uenc_to_format_holder[:len(temp_uenc_to_format_holder)-1]
-            temp_binary_key_holder=text_to_binary(temp_uenc_to_format_holder)
+           
+            title_bar = [
+                [sg.Text('Text Preview', background_color='#2e756a', text_color='white', pad=(10, 0), size=(30, 1)),
+                ]
+                        ]
 
-            layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
-                [sg.Button('Go'), sg.Button('Exit')]]
-            window = sg.Window('Select your encryption key file', layout)
-            event,values = window.read()
-            file_path = values['-IN-']
+            layout = [
+                [sg.Text('Do you wish to use this text?', font=('Helvetica', 16))],
+                [sg.Multiline(content, size=(80, 20), font=('Courier New', 12), disabled=True)],
+                [sg.Yes(), sg.No()]
+    ]
 
-
-
-            with open(file_path,'w+') as file:
-                file.write(temp_binary_key_holder)
-            window.close()
+            window = sg.Window('Text File Preview', layout, resizable=True, finalize=True)
+            event, values= window.read()
+    
 
 
+            if event=='Yes':
+                unenc_key_arr=text_inp_method(str(content))
+                temp_binary_key_holder=''
+                temp_uenc_to_format_holder=''
+                for _ in unenc_key_arr:
+                    temp_uenc_to_format_holder+=(str(_)+'|')
+                temp_uenc_to_format_holder=temp_uenc_to_format_holder[:len(temp_uenc_to_format_holder)-1]
+                temp_binary_key_holder=text_to_binary(temp_uenc_to_format_holder)
+
+                layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
+                    [sg.Button('Go'), sg.Button('Exit')]]
+                window = sg.Window('Select your encryption key file', layout)
+                event,values = window.read()
+                file_path = values['-IN-']
 
 
-            text_encrypt_decrypt(pseudo_random_number,unenc_key_arr)
-            logins.info('STAT INP TXT', 'CALLED')
+
+                with open(file_path,'w+') as file:
+                    file.write(temp_binary_key_holder)
+                window.close()
+
+
+
+
+                text_encrypt_decrypt(pseudo_random_number,unenc_key_arr)
+                logins.info('STAT INP TXT', 'CALLED')
+
+            else:
+                sys.exit()
 
         except:
             logins.critical('STAT INP TXT','ERROR IN CALLING STAT INP')
@@ -904,7 +925,7 @@ def main():
             title_bar = [
                 [sg.Text('Image Preview', background_color='#2e756a', text_color='white', pad=(10, 0), size=(30, 1)),
                 ]
-    ]
+                        ]
 
             layout= [[sg.Column(title_bar, background_color='#2e756a')],
                     [sg.Image(file_path)],
