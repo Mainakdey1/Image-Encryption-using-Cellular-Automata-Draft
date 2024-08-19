@@ -1035,6 +1035,23 @@ def signature_encrypt_decrypt(pseudo_random_number, unenc_key_arr,height, width)
 
 
 
+def signature_bonafide_checker(comp_path_1,comp_path_2):
+    try:
+        agg_difference_pcnt=0
+        prim_sig_arr_len=len(comp_path_1)
+    
+
+        for i in range(prim_sig_arr_len):
+            if comp_path_2[i]-comp_path_1[i]!=0:
+                agg_difference_pcnt+=1
+
+
+        print((agg_difference_pcnt/prim_sig_arr_len)*100, 'percent mismatch')
+        logins.warning('SIGNO_BONAFIDE_CHK','CALLED')
+    
+    except:
+        logins.warning('SIGNO_BONAFIDE_CHK','ERROR IN CALLING')
+
 
 
 
@@ -1054,7 +1071,7 @@ def main():
 
     layout = [
     [sg.Text('Please select the type of data you want to encrypt :')],
-    [sg.Radio('Text Encryption', 'RADIO1', key='te', size=(40)), sg.Radio('Image encryption', 'RADIO1', key='ie', size=40), sg.Radio('Signature encryption', 'RADIO1', key='sige' , size=40) ],
+    [sg.Radio('Text Encryption', 'RADIO1', key='te', size=(40)), sg.Radio('Image encryption', 'RADIO1', key='ie', size=40), sg.Radio('Signature encryption', 'RADIO1', key='sige' , size=40) , sg.Radio('Signature bonafide checker', 'RADIO1', key='sbe', size=40) ],
     
     [sg.Button('Submit'), sg.Button('Cancel') ]
     ]
@@ -1062,6 +1079,7 @@ def main():
     
     window = sg.Window( "new window", layout, no_titlebar=True)
     event , vals= window.read()
+
 
 
 
@@ -1073,6 +1091,10 @@ def main():
             stat_inp=2
         elif k=='sige' and vals[k]==True :
             stat_inp=3
+        elif k == 'sbe' and vals[k] == True:
+            stat_inp=4
+
+
 
     if stat_inp==2:
         try:
@@ -1191,6 +1213,29 @@ def main():
         except:
             logins.critical('STAT INP SIGNATURE','ERROR IN CALLING STAT INP')
 
+
+    elif stat_inp==4:
+        layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
+        [sg.Button('Go'), sg.Button('Exit')]]
+
+
+        window = sg.Window('First Signature', layout)
+        event,values = window.read()
+        _comp_path_1 = values['-IN-']
+        window.close()
+
+        layout = [[sg.Input(key='-IN-'), sg.FileBrowse()],
+        [sg.Button('Go'), sg.Button('Exit')]]
+
+
+        window = sg.Window('Second Signature', layout)
+        event,values = window.read()
+        _comp_path_2 = values['-IN-']
+        window.close()
+        sig_comp_arr_1=signo_inp_method(_comp_path_1)[2]
+        sig_comp_arr_2=signo_inp_method(_comp_path_2)[2]
+        signature_bonafide_checker(sig_comp_arr_1,sig_comp_arr_2)
+        
 
     sys.exit()
 try:
