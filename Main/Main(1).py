@@ -50,7 +50,7 @@ sys.set_int_max_str_digits(str_to_int_limits)
 
 
 
-__version__=0.102
+__version__=0.103
 
 
 
@@ -845,7 +845,15 @@ def enc_key_packer(key_arr):
         logins.warning('ENC_KEY_PACKER','ERROR IN CALLING')
 
 
+def accuracy_checker(in_arr, out_arr, prim_len):
+    
+    vote=0
+    for i in range(prim_len):
+        if in_arr[i]!=out_arr[i]:
+            vote+=1
 
+    print("Inaccuracy percentage : ",(vote/prim_len)*100 ,'%')
+    return None
 
 
 
@@ -891,9 +899,10 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
 
     #Important information: The pseudo random number must be in integer format and the unenc_key_arr argument must recieve only list objects.
 
-
+    
     try:
         #read the description in image encryption module
+        prim_len=len(unenc_key_arr)
         if len(unenc_key_arr)>=len(str(pseudo_random_number)):
 
             temp=len(unenc_key_arr)//len(str(pseudo_random_number))
@@ -913,7 +922,7 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
         fin=""
         for i in enc_list:
             fin+=chr(i)
-
+        print(fin)
         print("\nThe encrypted data is thus: ",fin)
 
         un_encrypted_ls=[]
@@ -924,8 +933,8 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
 
         for i in un_encrypted_ls:
             res+=chr(i)
-
-
+        print('1')
+        accuracy_checker(unenc_key_arr,un_encrypted_ls, prim_len)
         print("\nThe un-encrypted data is thus: ",res)
         logins.info('TEXT ENC_DENC_INTERNAL','CALLED')
 
@@ -1014,7 +1023,7 @@ def signature_encrypt_decrypt(pseudo_random_number, unenc_key_arr,height, width)
                 unenc_arr[i]=[enc_key_arr[i]^int(str(pseudo_random_number)[i]),]
             
 
-
+            accuracy_checker(unenc_key_arr,unenc_arr, prim_len)
             unenc_np_arr=np.array(unenc_arr)
             unenc_image=unenc_np_arr.reshape((height,width))
             unenc_image=unenc_image.astype(np.uint8)
@@ -1139,6 +1148,7 @@ def main():
 
 
             if event=='Yes':
+
                 unenc_key_arr=text_inp_method(str(content))
                 temp_binary_key_holder=''
                 temp_uenc_to_format_holder=''
@@ -1166,7 +1176,7 @@ def main():
 
                 text_encrypt_decrypt(pseudo_random_number,unenc_key_arr)
                 logins.info('STAT INP TXT', 'CALLED')
-
+          
             else:
                 sys.exit()
 
