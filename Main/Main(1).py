@@ -24,6 +24,7 @@ import numpy as np
 import cv2
 import random
 import PySimpleGUI as sg
+import base64
 from os.path import expanduser
 
 #gets the filepath of the current file the program is in
@@ -283,7 +284,7 @@ class encoded_file_storage():
 
 
 
-
+        
 
 
         def initialize_ca(size,tbit):
@@ -298,7 +299,7 @@ class encoded_file_storage():
 
             new_cells = np.zeros_like(cells)
             for i in range(1, len(cells) - 1):
-                rule_randomizer_int=random.randint(0,4)
+                rule_randomizer_int=random.randint(0,9)
                 if rule_randomizer_int==0:
 
                     new_cells[i] = rule30(cells[i - 1], cells[i], cells[i + 1])
@@ -346,9 +347,10 @@ class encoded_file_storage():
         nbit=10000
         target_bit=size//2
         binary_gen=generate_psn(size,nbit, target_bit)
-        _binary_representation = ''.join(format(ord(char), '08b') for char in pretext)
-        prim_len=len(_binary_representation)
+       
+        prim_len=len(pretext)
         pseudo_random_number = int("".join(map(str, binary_gen)), 2)
+       
 
         if prim_len>=len(str(pseudo_random_number)):
             temp=prim_len//len(str(pseudo_random_number))
@@ -356,21 +358,34 @@ class encoded_file_storage():
             pseudo_random_number=temp*(str(pseudo_random_number))+rem*"0"
 
         else:
-            pseudo_random_number=int(str(pseudo_random_number)[:(len(_binary_representation))])
+            
+            pseudo_random_number=int(str(pseudo_random_number)[:(len(pretext))])
 
-
-        _enc_binary_string=""
+        
+        _enc_string=""
         for i in range(prim_len):
-            _enc_binary_string+=str(int(str(pseudo_random_number)[i])^int(_binary_representation[i]))
+            _enc_string+=str(int(str(pseudo_random_number)[i])^int(pretext[i]))
+
+
 
         
 
+        scrambled_enc_string=_enc_string+str(pseudo_random_number)
+        
 
-        with open(self._file_path, "w+") as file:
-            file.write(_enc_binary_string)
+        
+        
 
-            file.close()
 
+        encoded_data = base64.b64encode(scrambled_enc_string.encode('utf-8'))
+
+        
+  
+        
+        # Writing the Base64 encoded data to a new file
+        
+        with open(self._file_path, 'wb') as encoded_file:
+            encoded_file.write(encoded_data)
         
 def custom_popup_yes_no(message, title='', keep_on_top=True):
     # Define the layout for the custom popup window
@@ -899,10 +914,13 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
 
     #Important information: The pseudo random number must be in integer format and the unenc_key_arr argument must recieve only list objects.
 
-    
+
     try:
         #read the description in image encryption module
         prim_len=len(unenc_key_arr)
+
+
+        
         if len(unenc_key_arr)>=len(str(pseudo_random_number)):
 
             temp=len(unenc_key_arr)//len(str(pseudo_random_number))
@@ -919,10 +937,12 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
         for i in range(len(unenc_key_arr)):
             enc_list+=[unenc_key_arr[i]^int(str(pseudo_random_number)[i]),]
 
+
+
         fin=""
         for i in enc_list:
             fin+=chr(i)
-        print(fin)
+
         print("\nThe encrypted data is thus: ",fin)
 
         un_encrypted_ls=[]
@@ -933,11 +953,14 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
 
         for i in un_encrypted_ls:
             res+=chr(i)
-        print('1')
+
         accuracy_checker(unenc_key_arr,un_encrypted_ls, prim_len)
+        
         print("\nThe un-encrypted data is thus: ",res)
         logins.info('TEXT ENC_DENC_INTERNAL','CALLED')
-
+        enc=encoded_file_storage(r'C:\Users\chestor\Desktop\okay.txt')
+        enc.encode(unenc_key_arr)
+ 
     except:
         logins.warning('TEXT ENC_DENC_INTERNAL','ERROR IN CALLING')
 
@@ -946,6 +969,9 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
 
 #Signature encryption and decryption module that takes a psn(key) and a working data set in array form and encrypts as well as decrypts it.
 def signature_encrypt_decrypt(pseudo_random_number, unenc_key_arr,height, width):
+
+
+
     try:
         packed_primary_key=enc_key_packer(pseudo_random_number)
 
@@ -1166,14 +1192,14 @@ def main():
                 file_path = values['-IN-']
 
 
-
+                
                 with open(file_path,'w+') as file:
                     file.write(temp_binary_key_holder)
                 window.close()
 
 
 
-
+               
                 text_encrypt_decrypt(pseudo_random_number,unenc_key_arr)
                 logins.info('STAT INP TXT', 'CALLED')
           
