@@ -51,7 +51,7 @@ sys.set_int_max_str_digits(str_to_int_limits)
 
 
 
-__version__=0.104
+__version__=0.105
 
 
 
@@ -125,8 +125,6 @@ class encoded_file_storage():
 
     def __init__(self,file_path = None) -> None:
         self._file_path=file_path
-        
-    def encode(self,pretext):
         def sbox(hieght,width):
 
             res_arr=[]
@@ -348,32 +346,36 @@ class encoded_file_storage():
         target_bit=size//2
         binary_gen=generate_psn(size,nbit, target_bit)
        
-        prim_len=len(pretext)
-        pseudo_random_number = int("".join(map(str, binary_gen)), 2)
-       
 
-        if prim_len>=len(str(pseudo_random_number)):
-            temp=prim_len//len(str(pseudo_random_number))
-            rem=prim_len-temp*(len(str(pseudo_random_number)))
-            pseudo_random_number=temp*(str(pseudo_random_number))+rem*"0"
+        self._pseudo_random_number = int("".join(map(str, binary_gen)), 2)
+       
+        
+    def encode(self,pretext):
+
+        prim_len=len(pretext)
+        if prim_len>=len(str(self._pseudo_random_number)):
+            temp=prim_len//len(str(self._pseudo_random_number))
+            rem=prim_len-temp*(len(str(self._pseudo_random_number)))
+            spseudo_random_number=temp*(str(self._pseudo_random_number))+rem*"0"
 
         else:
             
-            pseudo_random_number=int(str(pseudo_random_number)[:(len(pretext))])
+            spseudo_random_number=int(str(self._pseudo_random_number)[:(len(pretext))])
 
         
-        _enc_string=""
+        _enc_string=[]
         for i in range(prim_len):
-            _enc_string+=str(int(str(pseudo_random_number)[i])^int(pretext[i]))
+            _enc_string+=[str(int(str(spseudo_random_number)[i])^int(pretext[i])),]
 
 
+        _new_enc_string=''
+        for i in range(prim_len):
+            if i!=prim_len-1:
+                _new_enc_string+=_enc_string[i]+'|'
+            else:
+                _new_enc_string+=_enc_string[i]
 
-        
-
-        scrambled_enc_string=_enc_string+str(pseudo_random_number)
-        
-
-        
+        scrambled_enc_string=_new_enc_string+'~'+str(spseudo_random_number)
         
 
 
@@ -384,7 +386,7 @@ class encoded_file_storage():
         
         # Writing the Base64 encoded data to a new file
         
-        with open(self._file_path, 'wb') as encoded_file:
+        with open(self._file_path, 'wb+') as encoded_file:
             encoded_file.write(encoded_data)
         
 def custom_popup_yes_no(message, title='', keep_on_top=True):
@@ -918,6 +920,7 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
     try:
         #read the description in image encryption module
         prim_len=len(unenc_key_arr)
+        
 
 
         
@@ -932,7 +935,7 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
             pseudo_random_number=int(str(pseudo_random_number)[:len(unenc_key_arr)]
                                     )
 
-
+        print(pseudo_random_number)
         enc_list=[]
         for i in range(len(unenc_key_arr)):
             enc_list+=[unenc_key_arr[i]^int(str(pseudo_random_number)[i]),]
@@ -955,11 +958,11 @@ def text_encrypt_decrypt(pseudo_random_number,unenc_key_arr):
             res+=chr(i)
 
         accuracy_checker(unenc_key_arr,un_encrypted_ls, prim_len)
-        
+        print(len(res))
         print("\nThe un-encrypted data is thus: ",res)
         logins.info('TEXT ENC_DENC_INTERNAL','CALLED')
-        enc=encoded_file_storage(r'C:\Users\chestor\Desktop\okay.txt')
-        enc.encode(unenc_key_arr)
+        enc=encoded_file_storage(r'C:\Users\chestor\Desktop\okay.pxe')
+        enc.encode(enc_list)
  
     except:
         logins.warning('TEXT ENC_DENC_INTERNAL','ERROR IN CALLING')
@@ -1192,7 +1195,7 @@ def main():
                 file_path = values['-IN-']
 
 
-                
+    
                 with open(file_path,'w+') as file:
                     file.write(temp_binary_key_holder)
                 window.close()
