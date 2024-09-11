@@ -14,7 +14,7 @@ if missing:
 
 
 
-
+import os
 import urllib3
 import regex
 import imageio.v3
@@ -48,7 +48,12 @@ url='https://raw.githubusercontent.com/Mainakdey1/Image-Encryption-using-Cellula
 
 start_time=time.time()
 sys.set_int_max_str_digits(str_to_int_limits)
+def resource_path(relative_path):
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
 
+
+image_path = resource_path('dark.png')
 
 
 __version__=0.105
@@ -801,7 +806,7 @@ title_bar = [
 ]
 
 
-layout = [[sg.Column(title_bar, background_color='#2e756a')], [sg.Image(filename='dark.png' )], 
+layout = [[sg.Column(title_bar, background_color='#2e756a')], [sg.Image(filename=image_path )], 
     [sg.Text('Cellular Automata Maker')], 
     [sg.ProgressBar(max_value=100, orientation='h', size=(20, 20), key='-PROGRESS-')],
     [sg.Button('Start'), sg.Button('Exit')] , [sg.Text('Enter the number of iterations(minimum 50): '), sg.InputText(key='-ITER-')] ]
