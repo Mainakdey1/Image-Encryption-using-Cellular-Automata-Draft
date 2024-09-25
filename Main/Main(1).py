@@ -1,15 +1,6 @@
 import subprocess
 import pkg_resources
-
-
-
-
-
-required={'imageio','numpy','opencv-python','pysimplegui','urllib3','regex'}
-installed={pkg.key for pkg in pkg_resources.working_set}
-missing=required-installed
-if missing:
-    subprocess.check_call([sys.executable,"-m","pip","install",*missing])
+import os
 
 
 
@@ -42,6 +33,12 @@ sg.theme('DarkTeal10')             #sets the global gui color for the program
 url='https://raw.githubusercontent.com/Mainakdey1/Image-Encryption-using-Cellular-Automata-Draft/main/Main/Main(1).py'
 
 
+def resource_path(relative_path):
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+
+
+image_path = resource_path('images/dark.png')
 
 
 
@@ -51,7 +48,7 @@ sys.set_int_max_str_digits(str_to_int_limits)
 
 
 
-__version__=0.105
+__version__=0.106
 
 
 
@@ -801,7 +798,7 @@ title_bar = [
 ]
 
 
-layout = [[sg.Column(title_bar, background_color='#2e756a')], [sg.Image(filename='dark.png' )], 
+layout = [[sg.Column(title_bar, background_color='#2e756a')], [sg.Image(filename=image_path )], 
     [sg.Text('Cellular Automata Maker')], 
     [sg.ProgressBar(max_value=100, orientation='h', size=(20, 20), key='-PROGRESS-')],
     [sg.Button('Start'), sg.Button('Exit')] , [sg.Text('Enter the number of iterations(minimum 50): '), sg.InputText(key='-ITER-')] ]

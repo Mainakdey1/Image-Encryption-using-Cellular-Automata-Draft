@@ -1,20 +1,11 @@
 import subprocess
 import pkg_resources
-
-
-
-
-
-required={'imageio','numpy','opencv-python','pysimplegui','urllib3','regex'}
-installed={pkg.key for pkg in pkg_resources.working_set}
-missing=required-installed
-if missing:
-    subprocess.check_call([sys.executable,"-m","pip","install",*missing])
-
-
-
-
 import os
+
+
+
+
+
 import urllib3
 import regex
 import imageio.v3
@@ -42,21 +33,22 @@ sg.theme('DarkTeal10')             #sets the global gui color for the program
 url='https://raw.githubusercontent.com/Mainakdey1/Image-Encryption-using-Cellular-Automata-Draft/main/Main/Main(1).py'
 
 
+def resource_path(relative_path):
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+
+
+image_path = resource_path('images/dark.png')
 
 
 
 
 start_time=time.time()
 sys.set_int_max_str_digits(str_to_int_limits)
-def resource_path(relative_path):
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
 
 
-image_path = resource_path('dark.png')
 
-
-__version__=0.105
+__version__=0.106
 
 
 
